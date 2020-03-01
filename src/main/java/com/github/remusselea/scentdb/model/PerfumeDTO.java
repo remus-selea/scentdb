@@ -5,13 +5,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Perfume {
+public class PerfumeDTO {
 
     private int id;
 
     private String title;
 
-    private Notes notes;
+    private NotesDTO notes;
 
     private String brand;
 

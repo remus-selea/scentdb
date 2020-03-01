@@ -1,9 +1,9 @@
 package com.github.remusselea.scentdb.service;
 
 import com.github.remusselea.scentdb.model.Gender;
-import com.github.remusselea.scentdb.model.Note;
-import com.github.remusselea.scentdb.model.Notes;
-import com.github.remusselea.scentdb.model.Perfume;
+import com.github.remusselea.scentdb.model.NoteDTO;
+import com.github.remusselea.scentdb.model.NotesDTO;
+import com.github.remusselea.scentdb.model.PerfumeDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,8 +12,8 @@ import java.util.List;
 @Service
 public class MockPerfumes {
 
-    public Perfume getPerfume() {
-        Perfume perfume = new Perfume();
+    public PerfumeDTO getPerfume() {
+        PerfumeDTO perfume = new PerfumeDTO();
 
         perfume.setTitle("Amouage Interlude Man");
         perfume.setBrand("Amouage");
@@ -24,47 +24,47 @@ public class MockPerfumes {
         perfume.setImgPath("/images/1.jpg");
         perfume.setPerfumer("Pierre Negrin");
 
-        Notes notes = new Notes();
-        List<Note> baseNoteList = new ArrayList<>();
-        List<Note> topNoteList = new ArrayList<>();
-        List<Note> middleNoteList = new ArrayList<>();
+        NotesDTO notes = new NotesDTO();
+        List<NoteDTO> baseNoteList = new ArrayList<>();
+        List<NoteDTO> topNoteList = new ArrayList<>();
+        List<NoteDTO> middleNoteList = new ArrayList<>();
 
-        Note note = new Note();
+        NoteDTO note = new NoteDTO();
         note.setId("123");
         note.setName("Bergamot");
         topNoteList.add(note);
-        note = new Note();
+        note = new NoteDTO();
         note.setId("234");
         note.setName("Oregano");
         topNoteList.add(note);
-        note = new Note();
+        note = new NoteDTO();
         note.setId("345");
         note.setName("Allspice");
         topNoteList.add(note);
 
-        note = new Note();
+        note = new NoteDTO();
         note.setName("Amber");
         middleNoteList.add(note);
-        note = new Note();
+        note = new NoteDTO();
         note.setName("Opoponax");
         middleNoteList.add(note);
-        note = new Note();
+        note = new NoteDTO();
         note.setName("Incense");
         middleNoteList.add(note);
-        note = new Note();
+        note = new NoteDTO();
         note.setName("Cistus");
         middleNoteList.add(note);
 
-        note = new Note();
+        note = new NoteDTO();
         note.setName("Leather");
         baseNoteList.add(note);
-        note = new Note();
+        note = new NoteDTO();
         note.setName("Oud");
         baseNoteList.add(note);
-        note = new Note();
+        note = new NoteDTO();
         note.setName("Patchouli");
         baseNoteList.add(note);
-        note = new Note();
+        note = new NoteDTO();
         note.setName("Sandalwood");
         baseNoteList.add(note);
 
