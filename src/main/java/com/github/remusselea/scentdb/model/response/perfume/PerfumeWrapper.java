@@ -1,7 +1,6 @@
 package com.github.remusselea.scentdb.model.response.perfume;
 
 import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,22 +8,22 @@ import lombok.Setter;
 @Setter
 public class PerfumeWrapper {
 
-    private int perfumeId;
+  private int perfumeId;
 
-    private String title;
+  private String title;
 
-    private List<PerfumeNoteDto> perfumeNoteDtos;
+  private List<PerfumeNoteDto> perfumeNoteDtos;
 
-    private String brand;
+  private String brand;
 
-    private String launchYear;
+  private String launchYear;
 
-    private Gender gender;
+  private Gender gender;
 
-    private String perfumer;
+  private String perfumer;
 
-    private String description;
+  private String description;
 
-    private String imgPath;
+  private String imgPath;
 
 }

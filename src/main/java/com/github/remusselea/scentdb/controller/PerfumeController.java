@@ -9,17 +9,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class PerfumeController {
 
 
-    private PerfumesService perfumesService;
+  private PerfumesService perfumesService;
 
-    public PerfumeController(PerfumesService perfumesService) {
-        this.perfumesService = perfumesService;
-    }
+  public PerfumeController(PerfumesService perfumesService) {
+    this.perfumesService = perfumesService;
+  }
 
-    @GetMapping("/perfume")
-    public PerfumeResponse getPerfumeById() {
+  @GetMapping("/perfume")
+  public PerfumeResponse getPerfumeById() {
 
-        PerfumeResponse perfumeResponse = perfumesService.getPerfumeById(1L);
+    PerfumeResponse perfumeResponse = perfumesService.getPerfumeById(1L);
 
-        return perfumeResponse;
-    }
+    return perfumeResponse;
+  }
 }
