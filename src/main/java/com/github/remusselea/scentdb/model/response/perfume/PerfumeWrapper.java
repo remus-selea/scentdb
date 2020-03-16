@@ -1,17 +1,19 @@
-package com.github.remusselea.scentdb.model;
+package com.github.remusselea.scentdb.model.response.perfume;
+
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class PerfumeDTO {
+public class PerfumeWrapper {
 
-    private int id;
+    private int perfumeId;
 
     private String title;
 
-    private NotesDTO notes;
+    private List<PerfumeNoteDto> perfumeNoteDtos;
 
     private String brand;
 
