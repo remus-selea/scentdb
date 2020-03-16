@@ -7,3 +7,11 @@ jdk: openjdk11
 
 before_install:
   - chmod +x gradlew
+
+addons:
+  sonarcloud:
+    organization: "nardile" # To find your organization, go to: https://sonarcloud.io/account/organizations
+
+script:
+  # other script steps might be done before running the actual analysis
+  - sonar-scanner
