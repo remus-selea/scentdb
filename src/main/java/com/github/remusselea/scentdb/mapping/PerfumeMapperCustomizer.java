@@ -52,7 +52,7 @@ public class PerfumeMapperCustomizer {
 
     List<PerfumeNoteDto> perfumeNoteDtoList = new ArrayList<>(perfumeNoteDtoMap.values());
 
-    perfumeWrapper.setPerfumeNoteDtos(perfumeNoteDtoList);
+    perfumeWrapper.setPerfumeNoteDtoList(perfumeNoteDtoList);
     log.debug("Converted perfume {} to perfumeWrapper: {}", perfume, perfumeWrapper);
   }
 
