@@ -19,6 +19,12 @@ public class PerfumeController {
     this.perfumesService = perfumesService;
   }
 
+  /**
+   * Get a perfume by id.
+   *
+   * @param id of the perfume,
+   * @return a perfume.
+   */
   @GetMapping("/perfume/{id}")
   public PerfumeResponse getPerfumeById(@PathVariable Long id) {
     log.info("Getting perfume by Id: {}", id);
@@ -27,6 +33,11 @@ public class PerfumeController {
     return perfumeResponse;
   }
 
+  /**
+   * Get all perfumes.
+   *
+   * @return all perfumes.
+   */
   @GetMapping("/perfumes")
   public PerfumeResponse getAllPerfumes() {
     log.info("Getting all perfumes");
@@ -34,4 +45,5 @@ public class PerfumeController {
 
     return perfumeResponse;
   }
+
 }

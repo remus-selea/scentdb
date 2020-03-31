@@ -9,15 +9,17 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.MappingTarget;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 public class NoteMapperCustomizer {
 
-  @Autowired
   private NoteMapper noteMapper;
+
+  public NoteMapperCustomizer(NoteMapper noteMapper) {
+    this.noteMapper = noteMapper;
+  }
 
   /**
    * Perform the custom mappings from {@link PerfumeWrapper} to a {@link Perfume} object.

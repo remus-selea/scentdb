@@ -26,6 +26,13 @@ public class PerfumesService {
 
   private NoteMapper noteMapper;
 
+  /**
+   * All args constructor.
+   *
+   * @param perfumeRepository the perfume CrudRepository.
+   * @param perfumeMapper     mapper that maps perfumes to dto.
+   * @param noteMapper        mapper that maps notes to dto.
+   */
 
   public PerfumesService(PerfumeRepository perfumeRepository,
                          PerfumeMapper perfumeMapper, NoteMapper noteMapper) {
@@ -34,52 +41,57 @@ public class PerfumesService {
     this.noteMapper = noteMapper;
   }
 
-
   @Transactional
   public PerfumeResponse getAllPerfumes() {
     Iterable<Perfume> perfumes = perfumeRepository.findAll();
-    PerfumeResponse perfumeResponse = new PerfumeResponse();
 
-    List<PerfumeWrapper> perfumeWrapperList = new ArrayList<>();
-    perfumeResponse.setPerfumeWrapperList(perfumeWrapperList);
+    PerfumeResponse perfumeResponse = createPerfumeResponse();
 
     perfumes.forEach(perfume -> {
-      createPerfumeResponse(perfumeResponse, perfume);
+      addInfoToPerfumeResponse(perfumeResponse, perfume);
 
     });
 
     return perfumeResponse;
   }
 
-  private void createPerfumeResponse(PerfumeResponse perfumeResponse, Perfume perfume) {
-    PerfumeWrapper perfumeWrapper = perfumeMapper.perfumeToPerfumeWrapper(perfume);
-
-    Map<Long, NoteDto> noteDtoMap = new HashMap<>();
-    for (PerfumeNote perfumeNote : perfume.getPerfumeNotes()) {
-      Note note = perfumeNote.getNote();
-      NoteDto noteDto = noteMapper.perfumeNoteToNoteDto(perfumeNote);
-
-      noteDtoMap.put(note.getNoteId(), noteDto);
-    }
-
-    perfumeResponse.setNoteDtoMap(noteDtoMap);
-    perfumeResponse.getPerfumeWrapperList().add(perfumeWrapper);
-  }
-
-
   @Transactional
   public PerfumeResponse getPerfumeById(Long id) {
     Optional<Perfume> perfumes = perfumeRepository.findById(id);
-    PerfumeResponse perfumeResponse = new PerfumeResponse();
 
-    List<PerfumeWrapper> perfumeWrapperList = new ArrayList<>();
-    perfumeResponse.setPerfumeWrapperList(perfumeWrapperList);
+    PerfumeResponse perfumeResponse = createPerfumeResponse();
 
     if (perfumes.isPresent()) {
       Perfume perfume = perfumes.get();
-      createPerfumeResponse(perfumeResponse, perfume);
+      addInfoToPerfumeResponse(perfumeResponse, perfume);
     }
 
     return perfumeResponse;
   }
+
+
+  private PerfumeResponse createPerfumeResponse() {
+    PerfumeResponse perfumeResponse = new PerfumeResponse();
+
+    List<PerfumeWrapper> perfumeWrapperList = new ArrayList<>();
+    // Set empty perfumeWrapperList to perfume response
+    perfumeResponse.setPerfumeWrapperList(perfumeWrapperList);
+
+    Map<Long, NoteDto> noteDtoMap = new HashMap<>();
+    // Set empty noteDtoMap to perfume response
+    perfumeResponse.setNoteDtoMap(noteDtoMap);
+    return perfumeResponse;
+  }
+
+  private void addInfoToPerfumeResponse(PerfumeResponse perfumeResponse, Perfume perfume) {
+    PerfumeWrapper perfumeWrapper = perfumeMapper.perfumeToPerfumeWrapper(perfume);
+    perfumeResponse.getPerfumeWrapperList().add(perfumeWrapper);
+
+    for (PerfumeNote perfumeNote : perfume.getPerfumeNotes()) {
+      Note note = perfumeNote.getNote();
+      NoteDto noteDto = noteMapper.perfumeNoteToNoteDto(perfumeNote);
+      perfumeResponse.getNoteDtoMap().put(note.getNoteId(), noteDto);
+    }
+  }
+
 }
