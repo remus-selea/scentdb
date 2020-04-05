@@ -16,7 +16,7 @@ public interface PerfumeMapper {
   @Mapping(target = "perfumer", source = "perfumer")
   @Mapping(target = "description", source = "description")
   @Mapping(target = "imgPath", source = "imgPath")
-  @Mapping(target = "perfumeNoteDtos", ignore = true)
+  @Mapping(target = "perfumeNoteDtoList", ignore = true)
   PerfumeWrapper perfumeToPerfumeWrapper(Perfume perfume);
 
   @Mapping(target = "perfumeId", source = "perfumeId")

@@ -32,7 +32,8 @@ public class PerfumeMapperCustomizer {
    * Perform the custom mappings from {@link Perfume} to a {@link PerfumeWrapper} object.
    */
   @AfterMapping
-  public void afterMappingPerfumeToPerfumeWrapper(Perfume perfume, @MappingTarget PerfumeWrapper perfumeWrapper) {
+  public void afterMappingPerfumeToPerfumeWrapper(Perfume perfume,
+                                                  @MappingTarget PerfumeWrapper perfumeWrapper) {
     if (perfume.getPerfumeNotes() == null) {
       log.warn("No perfume notes found for perfume {}", perfume);
     }
@@ -52,7 +53,7 @@ public class PerfumeMapperCustomizer {
 
     List<PerfumeNoteDto> perfumeNoteDtoList = new ArrayList<>(perfumeNoteDtoMap.values());
 
-    perfumeWrapper.setPerfumeNoteDtos(perfumeNoteDtoList);
+    perfumeWrapper.setPerfumeNoteDtoList(perfumeNoteDtoList);
     log.debug("Converted perfume {} to perfumeWrapper: {}", perfume, perfumeWrapper);
   }
 
