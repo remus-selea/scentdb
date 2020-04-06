@@ -1,13 +1,16 @@
 package com.github.remusselea.scentdb.mapping;
 
+import com.github.remusselea.scentdb.data.Note;
 import com.github.remusselea.scentdb.data.Perfume;
 import com.github.remusselea.scentdb.data.PerfumeNote;
+import com.github.remusselea.scentdb.model.response.perfume.PerfumeDto;
 import com.github.remusselea.scentdb.model.response.perfume.PerfumeNoteDto;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeWrapper;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.MappingTarget;
@@ -29,11 +32,11 @@ public class PerfumeMapperCustomizer {
 
 
   /**
-   * Perform the custom mappings from {@link Perfume} to a {@link PerfumeWrapper} object.
+   * Perform the custom mappings from {@link Perfume} to a {@link PerfumeDto} object.
    */
   @AfterMapping
-  public void afterMappingPerfumeToPerfumeWrapper(Perfume perfume,
-                                                  @MappingTarget PerfumeWrapper perfumeWrapper) {
+  public void afterMappingPerfumeToPerfumeDto(Perfume perfume,
+                                              @MappingTarget PerfumeDto perfumeDto) {
     if (perfume.getPerfumeNotes() == null) {
       log.warn("No perfume notes found for perfume {}", perfume);
     }
@@ -53,19 +56,39 @@ public class PerfumeMapperCustomizer {
 
     List<PerfumeNoteDto> perfumeNoteDtoList = new ArrayList<>(perfumeNoteDtoMap.values());
 
-    perfumeWrapper.setPerfumeNoteDtoList(perfumeNoteDtoList);
-    log.debug("Converted perfume {} to perfumeWrapper: {}", perfume, perfumeWrapper);
+    perfumeDto.setPerfumeNoteDtoList(perfumeNoteDtoList);
+    log.debug("Converted Perfume {} to PerfumeDto: {}", perfume, perfumeDto);
   }
 
 
   /**
-   * Perform the custom mappings from {@link PerfumeWrapper} to a {@link Perfume} object.
+   * Perform the custom mappings from {@link PerfumeDto} to a {@link Perfume} object.
    */
   @AfterMapping
-  public void afterMappingPerfumeWrapperToPerfume(PerfumeWrapper perfumeWrapper,
-                                                  @MappingTarget Perfume perfume) {
+  public void afterMappingPerfumeDtoToPerfume(PerfumeDto perfumeDto,
+                                              @MappingTarget Perfume perfume) {
+    Set<PerfumeNote> perfumeNotes = new HashSet<>();
 
-    log.debug("Converted perfumeWrapper: {} to entity perfume: {}", perfumeWrapper, perfume);
+    for (PerfumeNoteDto perfumeNoteDto : perfumeDto.getPerfumeNoteDtoList()) {
+      for (Long noteId : perfumeNoteDto.getNotes()) {
+        // add note to PerfumeNote
+        Note note = new Note();
+        note.setNoteId(noteId);
+
+        Long perfumeId = perfume.getPerfumeId();
+        PerfumeNote perfumeNote = new PerfumeNote(perfume, note);
+
+        // set PerfumeNote type
+        String noteType = perfumeNoteDto.getType();
+        Character character = getKey(NOTE_TYPES_NAMES, noteType);
+        perfumeNote.setNoteType(character);
+
+        perfumeNotes.add(perfumeNote);
+      }
+    }
+    perfume.setPerfumeNotes(perfumeNotes);
+
+    log.debug("Converted PerfumeDto: {} to Perfume: {}", perfumeDto, perfume);
   }
 
   /**
@@ -78,4 +101,12 @@ public class PerfumeMapperCustomizer {
     return input != null && !input.isBlank() ? input : null;
   }
 
+
+  public static <K, V> K getKey(Map<K, V> map, V value) {
+    return map.entrySet()
+        .stream()
+        .filter(entry -> value.equals(entry.getValue()))
+        .map(Map.Entry::getKey)
+        .findFirst().get();
+  }
 }

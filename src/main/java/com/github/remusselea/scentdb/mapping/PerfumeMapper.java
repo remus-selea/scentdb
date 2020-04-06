@@ -1,7 +1,8 @@
 package com.github.remusselea.scentdb.mapping;
 
 import com.github.remusselea.scentdb.data.Perfume;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeWrapper;
+import com.github.remusselea.scentdb.model.response.perfume.PerfumeDto;
+import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -17,8 +18,9 @@ public interface PerfumeMapper {
   @Mapping(target = "description", source = "description")
   @Mapping(target = "imgPath", source = "imgPath")
   @Mapping(target = "perfumeNoteDtoList", ignore = true)
-  PerfumeWrapper perfumeToPerfumeWrapper(Perfume perfume);
+  PerfumeDto perfumeToPerfumeDto(Perfume perfume);
 
+  @InheritInverseConfiguration
   @Mapping(target = "perfumeId", source = "perfumeId")
   @Mapping(target = "title", source = "title")
   @Mapping(target = "brand", source = "brand")
@@ -28,6 +30,6 @@ public interface PerfumeMapper {
   @Mapping(target = "description", source = "description")
   @Mapping(target = "imgPath", source = "imgPath")
   @Mapping(target = "perfumeNotes", ignore = true)
-  Perfume perfumeWrapperToPerfume(PerfumeWrapper perfumeWrapper);
+  Perfume perfumeDtoToPerfume(PerfumeDto perfumeDto);
 
 }

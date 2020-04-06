@@ -8,7 +8,7 @@ import com.github.remusselea.scentdb.mapping.NoteMapper;
 import com.github.remusselea.scentdb.mapping.PerfumeMapper;
 import com.github.remusselea.scentdb.model.response.PerfumeResponse;
 import com.github.remusselea.scentdb.model.response.note.NoteDto;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeWrapper;
+import com.github.remusselea.scentdb.model.response.perfume.PerfumeDto;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,25 +57,42 @@ public class PerfumesService {
 
   @Transactional
   public PerfumeResponse getPerfumeById(Long id) {
-    Optional<Perfume> perfumes = perfumeRepository.findById(id);
+    Optional<Perfume> optionalPerfume = perfumeRepository.findById(id);
 
     PerfumeResponse perfumeResponse = createPerfumeResponse();
 
-    if (perfumes.isPresent()) {
-      Perfume perfume = perfumes.get();
+    if (optionalPerfume.isPresent()) {
+      Perfume perfume = optionalPerfume.get();
       addInfoToPerfumeResponse(perfumeResponse, perfume);
     }
 
     return perfumeResponse;
   }
 
+  @Transactional
+  public PerfumeResponse savePerfume(PerfumeResponse perfumeResponse) {
+    Perfume perfumeToSave = createPerfumeFromPerfumeResponse(perfumeResponse);
+
+    Perfume savedPerfume = perfumeRepository.save(perfumeToSave);
+
+    PerfumeResponse savedPerfumeResponse = createPerfumeResponse();
+    addInfoToPerfumeResponse(savedPerfumeResponse, savedPerfume);
+
+    return savedPerfumeResponse;
+  }
+
+
+  private Perfume createPerfumeFromPerfumeResponse(PerfumeResponse perfumeResponse) {
+
+    return perfumeMapper.perfumeDtoToPerfume(perfumeResponse.getPerfumeDtoList().get(0));
+  }
 
   private PerfumeResponse createPerfumeResponse() {
     PerfumeResponse perfumeResponse = new PerfumeResponse();
 
-    List<PerfumeWrapper> perfumeWrapperList = new ArrayList<>();
+    List<PerfumeDto> perfumeDtoList = new ArrayList<>();
     // Set empty perfumeWrapperList to perfume response
-    perfumeResponse.setPerfumeWrapperList(perfumeWrapperList);
+    perfumeResponse.setPerfumeDtoList(perfumeDtoList);
 
     Map<Long, NoteDto> noteDtoMap = new HashMap<>();
     // Set empty noteDtoMap to perfume response
@@ -84,8 +101,8 @@ public class PerfumesService {
   }
 
   private void addInfoToPerfumeResponse(PerfumeResponse perfumeResponse, Perfume perfume) {
-    PerfumeWrapper perfumeWrapper = perfumeMapper.perfumeToPerfumeWrapper(perfume);
-    perfumeResponse.getPerfumeWrapperList().add(perfumeWrapper);
+    PerfumeDto perfumeDto = perfumeMapper.perfumeToPerfumeDto(perfume);
+    perfumeResponse.getPerfumeDtoList().add(perfumeDto);
 
     for (PerfumeNote perfumeNote : perfume.getPerfumeNotes()) {
       Note note = perfumeNote.getNote();

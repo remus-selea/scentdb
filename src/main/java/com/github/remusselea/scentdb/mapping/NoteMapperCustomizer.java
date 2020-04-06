@@ -3,7 +3,7 @@ package com.github.remusselea.scentdb.mapping;
 import com.github.remusselea.scentdb.data.Perfume;
 import com.github.remusselea.scentdb.data.PerfumeNote;
 import com.github.remusselea.scentdb.model.response.note.NoteDto;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeWrapper;
+import com.github.remusselea.scentdb.model.response.perfume.PerfumeDto;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -22,12 +22,11 @@ public class NoteMapperCustomizer {
   }
 
   /**
-   * Perform the custom mappings from {@link PerfumeWrapper} to a {@link Perfume} object.
+   * Perform the custom mappings from {@link PerfumeDto} to a {@link Perfume} object.
    */
   @AfterMapping
   public void afterMappingPerfumeNotesToNoteDtoMap(@MappingTarget Map<Long, NoteDto> noteDtoMap,
                                                    Set<PerfumeNote> perfumeNotes) {
-
     for (PerfumeNote perfumeNote : perfumeNotes) {
       NoteDto noteDto = noteMapper.perfumeNoteToNoteDto(perfumeNote);
 

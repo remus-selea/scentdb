@@ -7,9 +7,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PerfumeWrapper {
+public class PerfumeDto {
 
-  private int perfumeId;
+  private long perfumeId;
 
   private String title;
 

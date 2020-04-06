@@ -1,5 +1,6 @@
 package com.github.remusselea.scentdb.data;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "notes")
-public class Note {
+public class Note implements Serializable {
 
   @Id
   @Column(name = "note_id")
@@ -22,4 +23,7 @@ public class Note {
 
   @Column(name = "img_path")
   private String imgPath;
+
+  public Note() {
+  }
 }
