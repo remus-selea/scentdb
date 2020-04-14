@@ -2,13 +2,20 @@ package com.github.remusselea.scentdb.data;
 
 import com.github.remusselea.scentdb.model.response.perfume.Gender;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Getter;
@@ -22,10 +29,12 @@ public class Perfume implements Serializable {
 
   @Id
   @Column(name = "perfume_id")
-  private long perfumeId;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long perfumeId;
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "perfume")
-  private Set<PerfumeNote> perfumeNotes;
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "perfume_id")
+  private Set<PerfumeNote> perfumeNotes = new HashSet<>();
 
   @Column(name = "title")
   private String title;
@@ -54,4 +63,5 @@ public class Perfume implements Serializable {
    */
   public Perfume() {
   }
+
 }

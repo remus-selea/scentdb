@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,13 +25,13 @@ public class PerfumeController {
   /**
    * Get a perfume by id.
    *
-   * @param id of the perfume,
+   * @param perfumeId the id of the perfume,
    * @return a perfume.
    */
-  @GetMapping("/perfumes/{id}")
-  public PerfumeResponse getPerfumeById(@PathVariable Long id) {
-    log.info("Getting perfume by Id: {}", id);
-    PerfumeResponse perfumeResponse = perfumesService.getPerfumeById(id);
+  @GetMapping("/perfumes/{perfumeId}")
+  public PerfumeResponse getPerfumeById(@PathVariable Long perfumeId) {
+    log.info("Getting perfume by Id: {}", perfumeId);
+    PerfumeResponse perfumeResponse = perfumesService.getPerfumeById(perfumeId);
 
     return perfumeResponse;
   }
@@ -48,13 +49,35 @@ public class PerfumeController {
     return perfumeResponse;
   }
 
+  /**
+   * Saves a perfume.
+   *
+   * @param perfumeResponse the perfume request body.
+   * @return the saved perfume.
+   */
   @PostMapping("/perfumes")
   public PerfumeResponse savePerfume(@RequestBody PerfumeResponse perfumeResponse) {
 
     PerfumeResponse savedPerfumeResponse = perfumesService.savePerfume(perfumeResponse);
 
+    return savedPerfumeResponse;
+  }
+
+
+  /**
+   * Updates a perfume.
+   *
+   * @param perfumeResponse the request body with the perfume data
+   * @param perfumeId the id of the perfume
+   * @return the updated perfume.
+   */
+  @PutMapping("/perfumes/{perfumeId}")
+  public PerfumeResponse updatePerfume(@RequestBody PerfumeResponse perfumeResponse, @PathVariable Long perfumeId) {
+
+    PerfumeResponse savedPerfumeResponse = perfumesService.savePerfume(perfumeResponse);
 
     return savedPerfumeResponse;
   }
+
 
 }

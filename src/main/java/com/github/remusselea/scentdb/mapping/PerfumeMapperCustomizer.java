@@ -48,6 +48,8 @@ public class PerfumeMapperCustomizer {
 
       if (perfumeNoteDto == null) {
         perfumeNoteDto = new PerfumeNoteDto();
+        perfumeNoteDto.setPerfumeNoteId(perfumeNote.getPerfumeNoteId());
+
         perfumeNoteDto.setType(NOTE_TYPES_NAMES.get(noteType));
         perfumeNoteDtoMap.put(noteType, perfumeNoteDto);
       }
@@ -67,7 +69,7 @@ public class PerfumeMapperCustomizer {
   @AfterMapping
   public void afterMappingPerfumeDtoToPerfume(PerfumeDto perfumeDto,
                                               @MappingTarget Perfume perfume) {
-    Set<PerfumeNote> perfumeNotes = new HashSet<>();
+    Set<PerfumeNote> perfumeNoteSet = new HashSet<>();
 
     for (PerfumeNoteDto perfumeNoteDto : perfumeDto.getPerfumeNoteDtoList()) {
       for (Long noteId : perfumeNoteDto.getNotes()) {
@@ -75,18 +77,19 @@ public class PerfumeMapperCustomizer {
         Note note = new Note();
         note.setNoteId(noteId);
 
-        Long perfumeId = perfume.getPerfumeId();
-        PerfumeNote perfumeNote = new PerfumeNote(perfume, note);
+        PerfumeNote perfumeNote = new PerfumeNote();
+        perfumeNote.setNote(note);
 
         // set PerfumeNote type
         String noteType = perfumeNoteDto.getType();
         Character character = getKey(NOTE_TYPES_NAMES, noteType);
         perfumeNote.setNoteType(character);
 
-        perfumeNotes.add(perfumeNote);
+        perfumeNoteSet.add(perfumeNote);
       }
     }
-    perfume.setPerfumeNotes(perfumeNotes);
+
+    perfume.setPerfumeNotes(perfumeNoteSet);
 
     log.debug("Converted PerfumeDto: {} to Perfume: {}", perfumeDto, perfume);
   }

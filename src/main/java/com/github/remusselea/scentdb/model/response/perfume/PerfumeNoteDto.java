@@ -9,6 +9,8 @@ import lombok.Setter;
 @Setter
 public class PerfumeNoteDto {
 
+  private Long perfumeNoteId;
+
   private String type;
 
   private List<Long> notes = new ArrayList<>();

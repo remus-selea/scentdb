@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 public class NoteDto {
 
-
   @JsonProperty("name")
   private String noteName;
 
