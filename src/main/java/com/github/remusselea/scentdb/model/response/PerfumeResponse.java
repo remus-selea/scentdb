@@ -1,8 +1,8 @@
 package com.github.remusselea.scentdb.model.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.remusselea.scentdb.model.response.note.NoteDto;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeWrapper;
+import com.github.remusselea.scentdb.model.note.NoteDto;
+import com.github.remusselea.scentdb.model.perfume.PerfumeDto;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
@@ -16,6 +16,6 @@ public class PerfumeResponse {
   private Map<Long, NoteDto> noteDtoMap;
 
   @JsonProperty("perfumes")
-  private List<PerfumeWrapper> perfumeWrapperList;
+  private List<PerfumeDto> perfumeDtoList;
 
 }

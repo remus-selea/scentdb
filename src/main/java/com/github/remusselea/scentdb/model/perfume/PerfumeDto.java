@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.model.response.perfume;
+package com.github.remusselea.scentdb.model.perfume;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
@@ -7,9 +7,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PerfumeWrapper {
+public class PerfumeDto {
 
-  private int perfumeId;
+  private long perfumeId;
 
   private String title;
 

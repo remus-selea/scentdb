@@ -1,9 +1,12 @@
 package com.github.remusselea.scentdb.mapping;
 
+import com.github.remusselea.scentdb.data.Note;
 import com.github.remusselea.scentdb.data.Perfume;
 import com.github.remusselea.scentdb.data.PerfumeNote;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeNoteDto;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeWrapper;
+import com.github.remusselea.scentdb.model.PerfumeRequest;
+import com.github.remusselea.scentdb.model.note.NoteDto;
+import com.github.remusselea.scentdb.model.perfume.PerfumeDto;
+import com.github.remusselea.scentdb.model.perfume.PerfumeNoteDto;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,13 +30,12 @@ public class PerfumeMapperCustomizer {
     NOTE_TYPES_NAMES.put('g', "general notes");
   }
 
-
   /**
-   * Perform the custom mappings from {@link Perfume} to a {@link PerfumeWrapper} object.
+   * Perform the custom mappings from {@link Perfume} to a {@link PerfumeDto} object.
    */
   @AfterMapping
-  public void afterMappingPerfumeToPerfumeWrapper(Perfume perfume,
-                                                  @MappingTarget PerfumeWrapper perfumeWrapper) {
+  public void afterMappingPerfumeToPerfumeDto(Perfume perfume,
+                                              @MappingTarget PerfumeDto perfumeDto) {
     if (perfume.getPerfumeNotes() == null) {
       log.warn("No perfume notes found for perfume {}", perfume);
     }
@@ -45,7 +47,8 @@ public class PerfumeMapperCustomizer {
 
       if (perfumeNoteDto == null) {
         perfumeNoteDto = new PerfumeNoteDto();
-        perfumeNoteDto.setType(NOTE_TYPES_NAMES.get(noteType));
+
+        perfumeNoteDto.setNoteType(NOTE_TYPES_NAMES.get(noteType));
         perfumeNoteDtoMap.put(noteType, perfumeNoteDto);
       }
       perfumeNoteDto.addNote(perfumeNote.getNote().getNoteId());
@@ -53,29 +56,51 @@ public class PerfumeMapperCustomizer {
 
     List<PerfumeNoteDto> perfumeNoteDtoList = new ArrayList<>(perfumeNoteDtoMap.values());
 
-    perfumeWrapper.setPerfumeNoteDtoList(perfumeNoteDtoList);
-    log.debug("Converted perfume {} to perfumeWrapper: {}", perfume, perfumeWrapper);
+    perfumeDto.setPerfumeNoteDtoList(perfumeNoteDtoList);
+    log.debug("Converted Perfume {} to PerfumeDto: {}", perfume, perfumeDto);
   }
 
 
   /**
-   * Perform the custom mappings from {@link PerfumeWrapper} to a {@link Perfume} object.
+   * Perform the custom mappings from {@link PerfumeRequest} to a {@link Perfume} object.
    */
   @AfterMapping
-  public void afterMappingPerfumeWrapperToPerfume(PerfumeWrapper perfumeWrapper,
+  public void afterMappingPerfumeRequestToPerfume(PerfumeRequest perfumeRequest,
                                                   @MappingTarget Perfume perfume) {
+    Map<Long, NoteDto> noteDtoMap = perfumeRequest.getNoteDtoMap();
 
-    log.debug("Converted perfumeWrapper: {} to entity perfume: {}", perfumeWrapper, perfume);
+    for (PerfumeNoteDto perfumeNoteDto : perfumeRequest.getPerfumeDto().getPerfumeNoteDtoList()) {
+      for (Long noteId : perfumeNoteDto.getNotes()) {
+        // create the note and set it's id
+        Note note = new Note();
+        note.setNoteId(noteId);
+        // find the noteDto in map
+        NoteDto noteDto = noteDtoMap.get(note.getNoteId());
+        // set note name and img path
+        note.setNoteName(noteDto.getNoteName());
+        note.setImgPath(noteDto.getImgPath());
+        // get PerfumeNote type
+        String noteType = perfumeNoteDto.getNoteType();
+        Character character = getKey(NOTE_TYPES_NAMES, noteType);
+        // add the note and the type to the perfume
+        perfume.addNote(note, character);
+      }
+    }
+    log.debug("Converted PerfumeRequest: {} to Perfume: {}", perfumeRequest, perfume);
   }
 
   /**
-   * Set the value if the String is present.
+   * Get the Key of a Map if it contains a value.
    *
-   * @param input the input to be checked
-   * @return the value of the input or {@code null} if not present
+   * @param map   the map which will be checked for a value.
+   * @param value the value to check for in the map.
+   * @return the key of the map if it is found or null if it is not found.
    */
-  private String getValueIfPresent(String input) {
-    return input != null && !input.isBlank() ? input : null;
+  public static <K, V> K getKey(Map<K, V> map, V value) {
+    return map.entrySet()
+        .stream()
+        .filter(entry -> value.equals(entry.getValue()))
+        .map(Map.Entry::getKey)
+        .findFirst().orElse(null);
   }
-
 }
