@@ -1,8 +1,10 @@
 package com.github.remusselea.scentdb.controller;
 
+import com.github.remusselea.scentdb.model.PerfumeRequest;
 import com.github.remusselea.scentdb.model.response.PerfumeResponse;
-import com.github.remusselea.scentdb.service.PerfumesService;
+import com.github.remusselea.scentdb.service.PerfumeService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class PerfumeController {
 
-  private PerfumesService perfumesService;
+  private PerfumeService perfumeService;
 
-  public PerfumeController(PerfumesService perfumesService) {
-    this.perfumesService = perfumesService;
+  public PerfumeController(PerfumeService perfumeService) {
+    this.perfumeService = perfumeService;
   }
 
   /**
@@ -31,9 +33,8 @@ public class PerfumeController {
   @GetMapping("/perfumes/{perfumeId}")
   public PerfumeResponse getPerfumeById(@PathVariable Long perfumeId) {
     log.info("Getting perfume by Id: {}", perfumeId);
-    PerfumeResponse perfumeResponse = perfumesService.getPerfumeById(perfumeId);
 
-    return perfumeResponse;
+    return perfumeService.getPerfumeById(perfumeId);
   }
 
   /**
@@ -44,39 +45,42 @@ public class PerfumeController {
   @GetMapping("/perfumes")
   public PerfumeResponse getAllPerfumes() {
     log.info("Getting all perfumes");
-    PerfumeResponse perfumeResponse = perfumesService.getAllPerfumes();
 
-    return perfumeResponse;
+    return perfumeService.getAllPerfumes();
   }
 
   /**
    * Saves a perfume.
    *
-   * @param perfumeResponse the perfume request body.
+   * @param perfumeRequest the perfume request body.
    * @return the saved perfume.
    */
   @PostMapping("/perfumes")
-  public PerfumeResponse savePerfume(@RequestBody PerfumeResponse perfumeResponse) {
+  public PerfumeResponse savePerfume(@RequestBody PerfumeRequest perfumeRequest) {
 
-    PerfumeResponse savedPerfumeResponse = perfumesService.savePerfume(perfumeResponse);
-
-    return savedPerfumeResponse;
+    return perfumeService.savePerfume(perfumeRequest);
   }
 
 
   /**
    * Updates a perfume.
    *
-   * @param perfumeResponse the request body with the perfume data
-   * @param perfumeId the id of the perfume
+   * @param perfumeRequest the request body with the perfume data
+   * @param perfumeId      the id of the perfume
    * @return the updated perfume.
    */
   @PutMapping("/perfumes/{perfumeId}")
-  public PerfumeResponse updatePerfume(@RequestBody PerfumeResponse perfumeResponse, @PathVariable Long perfumeId) {
+  public PerfumeResponse updatePerfume(@RequestBody PerfumeRequest perfumeRequest,
+                                       @PathVariable Long perfumeId) {
 
-    PerfumeResponse savedPerfumeResponse = perfumesService.savePerfume(perfumeResponse);
+    return perfumeService.savePerfume(perfumeRequest);
+  }
 
-    return savedPerfumeResponse;
+
+  @DeleteMapping("/perfumes/{perfumeId}")
+  public void removePerfume(@PathVariable Long perfumeId) {
+
+    perfumeService.removePerfumeById(perfumeId);
   }
 
 

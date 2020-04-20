@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.model.response.note;
+package com.github.remusselea.scentdb.model.note;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

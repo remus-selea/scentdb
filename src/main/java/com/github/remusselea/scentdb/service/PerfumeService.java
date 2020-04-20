@@ -3,29 +3,26 @@ package com.github.remusselea.scentdb.service;
 import com.github.remusselea.scentdb.data.Note;
 import com.github.remusselea.scentdb.data.Perfume;
 import com.github.remusselea.scentdb.data.PerfumeNote;
-import com.github.remusselea.scentdb.data.repo.PerfumeNoteRepository;
 import com.github.remusselea.scentdb.data.repo.PerfumeRepository;
 import com.github.remusselea.scentdb.mapping.NoteMapper;
 import com.github.remusselea.scentdb.mapping.PerfumeMapper;
+import com.github.remusselea.scentdb.model.PerfumeRequest;
+import com.github.remusselea.scentdb.model.note.NoteDto;
+import com.github.remusselea.scentdb.model.perfume.PerfumeDto;
 import com.github.remusselea.scentdb.model.response.PerfumeResponse;
-import com.github.remusselea.scentdb.model.response.note.NoteDto;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeDto;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+@Transactional
 @Service
-public class PerfumesService {
+public class PerfumeService {
 
   private PerfumeRepository perfumeRepository;
-
-  private PerfumeNoteRepository perfumeNoteRepository;
 
   private PerfumeMapper perfumeMapper;
 
@@ -34,39 +31,43 @@ public class PerfumesService {
   /**
    * All args constructor.
    *
-   * @param perfumeRepository the perfume CrudRepository.
+   * @param perfumeRepository the perfume repository.
    * @param perfumeMapper     mapper that maps perfumes to dto.
    * @param noteMapper        mapper that maps notes to dto.
    */
-  public PerfumesService(PerfumeRepository perfumeRepository, PerfumeNoteRepository perfumeNoteRepository, PerfumeMapper perfumeMapper, NoteMapper noteMapper) {
+  public PerfumeService(PerfumeRepository perfumeRepository,
+                        PerfumeMapper perfumeMapper, NoteMapper noteMapper) {
     this.perfumeRepository = perfumeRepository;
-    this.perfumeNoteRepository = perfumeNoteRepository;
     this.perfumeMapper = perfumeMapper;
     this.noteMapper = noteMapper;
   }
 
-
-
-
+  /**
+   * Gets all existing {@link Perfume} from the {@link PerfumeRepository}
+   * and returns them in the form of a {@link PerfumeResponse}.
+   *
+   * @return a {@link PerfumeResponse} containing all the perfumes and their notes.
+   */
   public PerfumeResponse getAllPerfumes() {
     Iterable<Perfume> perfumes = perfumeRepository.findAll();
 
     PerfumeResponse perfumeResponse = createPerfumeResponse();
-
-    perfumes.forEach(perfume -> {
-      addInfoToPerfumeResponse(perfumeResponse, perfume);
-
-    });
+    perfumes.forEach(perfume -> addInfoToPerfumeResponse(perfumeResponse, perfume));
 
     return perfumeResponse;
   }
 
-  @Transactional
+  /**
+   * Gets a {@link Perfume} by Id from the {@link PerfumeRepository}
+   * and returns it in the form of a {@link PerfumeResponse}.
+   *
+   * @param id the identifier of the {@link Perfume}.
+   * @return a {@link PerfumeResponse} containing a perfume and it's notes.
+   */
   public PerfumeResponse getPerfumeById(Long id) {
     Optional<Perfume> optionalPerfume = perfumeRepository.findById(id);
 
     PerfumeResponse perfumeResponse = createPerfumeResponse();
-
     if (optionalPerfume.isPresent()) {
       Perfume perfume = optionalPerfume.get();
       addInfoToPerfumeResponse(perfumeResponse, perfume);
@@ -75,15 +76,14 @@ public class PerfumesService {
     return perfumeResponse;
   }
 
-  public PerfumeResponse savePerfume(PerfumeResponse perfumeResponse) {
-    Perfume perfumeToSave = createPerfumeFromPerfumeResponse(perfumeResponse);
-
-    return savePerfume2(perfumeToSave);
-  }
-
-  @Transactional
-  public PerfumeResponse savePerfume2(Perfume perfumeToSave) {
-
+  /**
+   * Creates or updates a {@link Perfume} in the configured {@link PerfumeRepository}.
+   *
+   * @param perfumeRequest the object containing the data of a perfume to be created or updated.
+   * @return returns a {@link PerfumeResponse} containing the perfume saved in the database.
+   */
+  public PerfumeResponse savePerfume(PerfumeRequest perfumeRequest) {
+    Perfume perfumeToSave = perfumeMapper.perfumeRequestToPerfume(perfumeRequest);
     Perfume savedPerfume = perfumeRepository.save(perfumeToSave);
 
     PerfumeResponse savedPerfumeResponse = createPerfumeResponse();
@@ -92,46 +92,43 @@ public class PerfumesService {
     return savedPerfumeResponse;
   }
 
-
-  private Perfume createPerfumeFromPerfumeResponse(PerfumeResponse perfumeResponse) {
-    Perfume perfume = perfumeMapper.perfumeDtoToPerfume(perfumeResponse.getPerfumeDtoList().get(0));
-    Set<PerfumeNote> perfumeNoteSet = perfume.getPerfumeNotes();
-    Map<Long, NoteDto> noteDtoMap = perfumeResponse.getNoteDtoMap();
-
-    for (PerfumeNote perfumeNote : perfumeNoteSet) {
-      Note note = perfumeNote.getNote();
-      long noteId = note.getNoteId();
-      NoteDto noteDto = noteDtoMap.get(noteId);
-
-      note.setNoteName(noteDto.getNoteName());
-      note.setImgPath(noteDto.getImgPath());
-    }
-
-    return perfume;
-  }
-
+  /**
+   * Creates a {@link PerfumeResponse}
+   * and adds an empty list of {@link PerfumeDto} and empty map of {@link Map noteDtoMap} to it.
+   *
+   * @return the created PerfumeResponse.
+   */
   private PerfumeResponse createPerfumeResponse() {
     PerfumeResponse perfumeResponse = new PerfumeResponse();
-
+    // Create and set the empty perfumeDtoList to perfume response
     List<PerfumeDto> perfumeDtoList = new ArrayList<>();
-    // Set empty perfumeWrapperList to perfume response
     perfumeResponse.setPerfumeDtoList(perfumeDtoList);
-
+    // Create and set the empty noteDtoMap to perfume response
     Map<Long, NoteDto> noteDtoMap = new HashMap<>();
-    // Set empty noteDtoMap to perfume response
     perfumeResponse.setNoteDtoMap(noteDtoMap);
+
     return perfumeResponse;
   }
 
+  /**
+   * Adds the data of a {@link Perfume} to a {@link PerfumeResponse}.
+   */
   private void addInfoToPerfumeResponse(PerfumeResponse perfumeResponse, Perfume perfume) {
+    // map perfume to perfumeDto
     PerfumeDto perfumeDto = perfumeMapper.perfumeToPerfumeDto(perfume);
+    // add each mapped perfumeDto into the perfumeDtoList of perfumeResponse
     perfumeResponse.getPerfumeDtoList().add(perfumeDto);
 
+    // map each PerfumeNote to a NoteDto and put it in the noteDtoMap
     for (PerfumeNote perfumeNote : perfume.getPerfumeNotes()) {
-       Note note = perfumeNote.getNote();
       NoteDto noteDto = noteMapper.perfumeNoteToNoteDto(perfumeNote);
+      Note note = perfumeNote.getNote();
       perfumeResponse.getNoteDtoMap().put(note.getNoteId(), noteDto);
     }
+  }
+
+  public void removePerfumeById(Long perfumeId) {
+    perfumeRepository.deleteById(perfumeId);
   }
 
 }

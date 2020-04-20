@@ -1,5 +1,6 @@
-package com.github.remusselea.scentdb.model.response.perfume;
+package com.github.remusselea.scentdb.model.perfume;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -9,9 +10,8 @@ import lombok.Setter;
 @Setter
 public class PerfumeNoteDto {
 
-  private Long perfumeNoteId;
-
-  private String type;
+  @JsonProperty("type")
+  private String noteType;
 
   private List<Long> notes = new ArrayList<>();
 

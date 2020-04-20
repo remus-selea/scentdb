@@ -1,35 +1,26 @@
 package com.github.remusselea.scentdb.mapping;
 
 import com.github.remusselea.scentdb.data.Perfume;
-import com.github.remusselea.scentdb.model.response.perfume.PerfumeDto;
-import org.mapstruct.InheritInverseConfiguration;
+import com.github.remusselea.scentdb.model.PerfumeRequest;
+import com.github.remusselea.scentdb.model.perfume.PerfumeDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {PerfumeMapperCustomizer.class})
 public interface PerfumeMapper {
 
-  @Mapping(target = "perfumeId", source = "perfumeId")
-  @Mapping(target = "title", source = "title")
-  @Mapping(target = "brand", source = "brand")
-  @Mapping(target = "launchYear", source = "launchYear")
-  @Mapping(target = "gender", source = "gender")
-  @Mapping(target = "perfumer", source = "perfumer")
-  @Mapping(target = "description", source = "description")
-  @Mapping(target = "imgPath", source = "imgPath")
   @Mapping(target = "perfumeNoteDtoList", ignore = true)
   PerfumeDto perfumeToPerfumeDto(Perfume perfume);
 
-  @InheritInverseConfiguration
-  @Mapping(target = "perfumeId", source = "perfumeId")
-  @Mapping(target = "title", source = "title")
-  @Mapping(target = "brand", source = "brand")
-  @Mapping(target = "launchYear", source = "launchYear")
-  @Mapping(target = "gender", source = "gender")
-  @Mapping(target = "perfumer", source = "perfumer")
-  @Mapping(target = "description", source = "description")
-  @Mapping(target = "imgPath", source = "imgPath")
+  @Mapping(target = "perfumeId", source = "perfumeDto.perfumeId")
+  @Mapping(target = "title", source = "perfumeDto.title")
+  @Mapping(target = "brand", source = "perfumeDto.brand")
+  @Mapping(target = "launchYear", source = "perfumeDto.launchYear")
+  @Mapping(target = "gender", source = "perfumeDto.gender")
+  @Mapping(target = "perfumer", source = "perfumeDto.perfumer")
+  @Mapping(target = "description", source = "perfumeDto.description")
+  @Mapping(target = "imgPath", source = "perfumeDto.imgPath")
   @Mapping(target = "perfumeNotes", ignore = true)
-  Perfume perfumeDtoToPerfume(PerfumeDto perfumeDto);
+  Perfume perfumeRequestToPerfume(PerfumeRequest perfumeRequest);
 
 }
