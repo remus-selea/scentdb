@@ -1,8 +1,9 @@
-package com.github.remusselea.scentdb.mapping;
+package com.github.remusselea.scentdb.dto.mapper;
 
-import com.github.remusselea.scentdb.data.Note;
-import com.github.remusselea.scentdb.data.PerfumeNote;
-import com.github.remusselea.scentdb.model.note.NoteDto;
+import com.github.remusselea.scentdb.dto.model.note.NoteDto;
+import com.github.remusselea.scentdb.dto.request.NoteRequest;
+import com.github.remusselea.scentdb.model.entity.Note;
+import com.github.remusselea.scentdb.model.entity.PerfumeNote;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -17,8 +18,6 @@ public interface NoteMapper {
   @Mapping(source = "imgPath", target = "imgPath")
   NoteDto noteToNoteDto(Note note);
 
-  Note convertNoteDtoToNote(NoteDto noteDto);
+  Note convertNoteRequestToNote(NoteRequest noteRequest);
 
-  //@InheritInverseConfiguration
-  //PerfumeNote noteDtoToPerfumeNote(NoteDto noteDto);
 }

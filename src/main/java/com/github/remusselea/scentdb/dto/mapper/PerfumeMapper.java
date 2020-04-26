@@ -1,8 +1,8 @@
-package com.github.remusselea.scentdb.mapping;
+package com.github.remusselea.scentdb.dto.mapper;
 
-import com.github.remusselea.scentdb.data.Perfume;
-import com.github.remusselea.scentdb.model.PerfumeRequest;
-import com.github.remusselea.scentdb.model.perfume.PerfumeDto;
+import com.github.remusselea.scentdb.dto.model.perfume.PerfumeDto;
+import com.github.remusselea.scentdb.dto.request.PerfumeRequest;
+import com.github.remusselea.scentdb.model.entity.Perfume;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -19,7 +19,7 @@ public interface PerfumeMapper {
   @Mapping(target = "gender", source = "perfumeDto.gender")
   @Mapping(target = "perfumer", source = "perfumeDto.perfumer")
   @Mapping(target = "description", source = "perfumeDto.description")
-  @Mapping(target = "imgPath", source = "perfumeDto.imgPath")
+  @Mapping(target = "imgPath", ignore = true)
   @Mapping(target = "perfumeNotes", ignore = true)
   Perfume perfumeRequestToPerfume(PerfumeRequest perfumeRequest);
 

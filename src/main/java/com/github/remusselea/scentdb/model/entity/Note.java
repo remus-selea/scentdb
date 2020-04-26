@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.data;
+package com.github.remusselea.scentdb.model.entity;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -8,17 +8,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.NaturalIdCache;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity(name = "Note")
 @Table(name = "notes")
-@NaturalIdCache
-@Cache(
-    usage = CacheConcurrencyStrategy.READ_WRITE
-)
+
+@Getter
+@Setter
 public class Note implements Serializable {
 
   @Id
@@ -27,7 +24,6 @@ public class Note implements Serializable {
   private long noteId;
 
   @Column(name = "note_name")
-  @NaturalId
   private String noteName;
 
   @Column(name = "img_path")
@@ -39,31 +35,6 @@ public class Note implements Serializable {
   public Note() {
     // The JPA specification requires that all persistent classes have a no-arg constructor.
   }
-
-  public long getNoteId() {
-    return noteId;
-  }
-
-  public void setNoteId(long noteId) {
-    this.noteId = noteId;
-  }
-
-  public String getNoteName() {
-    return noteName;
-  }
-
-  public void setNoteName(String noteName) {
-    this.noteName = noteName;
-  }
-
-  public String getImgPath() {
-    return imgPath;
-  }
-
-  public void setImgPath(String imgPath) {
-    this.imgPath = imgPath;
-  }
-
 
   @Override
   public boolean equals(Object o) {

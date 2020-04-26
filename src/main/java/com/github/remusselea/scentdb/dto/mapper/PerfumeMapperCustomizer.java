@@ -1,12 +1,12 @@
-package com.github.remusselea.scentdb.mapping;
+package com.github.remusselea.scentdb.dto.mapper;
 
-import com.github.remusselea.scentdb.data.Note;
-import com.github.remusselea.scentdb.data.Perfume;
-import com.github.remusselea.scentdb.data.PerfumeNote;
-import com.github.remusselea.scentdb.model.PerfumeRequest;
-import com.github.remusselea.scentdb.model.note.NoteDto;
-import com.github.remusselea.scentdb.model.perfume.PerfumeDto;
-import com.github.remusselea.scentdb.model.perfume.PerfumeNoteDto;
+import com.github.remusselea.scentdb.dto.model.note.NoteDto;
+import com.github.remusselea.scentdb.dto.model.perfume.PerfumeDto;
+import com.github.remusselea.scentdb.dto.model.perfume.PerfumeNoteDto;
+import com.github.remusselea.scentdb.dto.request.PerfumeRequest;
+import com.github.remusselea.scentdb.model.entity.Note;
+import com.github.remusselea.scentdb.model.entity.Perfume;
+import com.github.remusselea.scentdb.model.entity.PerfumeNote;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,15 +43,16 @@ public class PerfumeMapperCustomizer {
 
     for (PerfumeNote perfumeNote : perfume.getPerfumeNotes()) {
       Character noteType = perfumeNote.getNoteType();
-      PerfumeNoteDto perfumeNoteDto = perfumeNoteDtoMap.get(noteType);
 
-      if (perfumeNoteDto == null) {
-        perfumeNoteDto = new PerfumeNoteDto();
-
-        perfumeNoteDto.setNoteType(NOTE_TYPES_NAMES.get(noteType));
-        perfumeNoteDtoMap.put(noteType, perfumeNoteDto);
-      }
-      perfumeNoteDto.addNote(perfumeNote.getNote().getNoteId());
+      perfumeNoteDtoMap.compute(noteType, (key, value) -> {
+        PerfumeNoteDto perfumeNoteDto = value;
+        if (value == null) {
+          perfumeNoteDto = new PerfumeNoteDto();
+          perfumeNoteDto.setNoteType(NOTE_TYPES_NAMES.get(key));
+        }
+        perfumeNoteDto.addNoteId(perfumeNote.getNote().getNoteId());
+        return perfumeNoteDto;
+      });
     }
 
     List<PerfumeNoteDto> perfumeNoteDtoList = new ArrayList<>(perfumeNoteDtoMap.values());
@@ -59,7 +60,6 @@ public class PerfumeMapperCustomizer {
     perfumeDto.setPerfumeNoteDtoList(perfumeNoteDtoList);
     log.debug("Converted Perfume {} to PerfumeDto: {}", perfume, perfumeDto);
   }
-
 
   /**
    * Perform the custom mappings from {@link PerfumeRequest} to a {@link Perfume} object.

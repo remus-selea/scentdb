@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.model.note;
+package com.github.remusselea.scentdb.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -6,7 +6,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NoteDto {
+public class NoteRequest {
+
+  @JsonProperty("id")
+  private Long noteId;
 
   @JsonProperty("name")
   private String noteName;
