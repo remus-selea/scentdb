@@ -1,6 +1,6 @@
-package com.github.remusselea.scentdb.data;
+package com.github.remusselea.scentdb.model.entity;
 
-import com.github.remusselea.scentdb.model.perfume.Gender;
+import com.github.remusselea.scentdb.dto.model.perfume.Gender;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,10 +15,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 
 @Entity(name = "Perfume")
 @Table(name = "perfumes")
+@Getter
+@Setter
 public class Perfume implements Serializable {
 
   @Id
@@ -61,79 +65,6 @@ public class Perfume implements Serializable {
   public Perfume() {
     // The JPA specification requires that all persistent classes have a no-arg constructor.
   }
-
-  public Long getPerfumeId() {
-    return perfumeId;
-  }
-
-  public void setPerfumeId(Long perfumeId) {
-    this.perfumeId = perfumeId;
-  }
-
-  public Set<PerfumeNote> getPerfumeNotes() {
-    return perfumeNotes;
-  }
-
-  public void setPerfumeNotes(Set<PerfumeNote> perfumeNotes) {
-    this.perfumeNotes = perfumeNotes;
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
-  }
-
-  public String getBrand() {
-    return brand;
-  }
-
-  public void setBrand(String brand) {
-    this.brand = brand;
-  }
-
-  public int getLaunchYear() {
-    return launchYear;
-  }
-
-  public void setLaunchYear(int launchYear) {
-    this.launchYear = launchYear;
-  }
-
-  public Gender getGender() {
-    return gender;
-  }
-
-  public void setGender(Gender gender) {
-    this.gender = gender;
-  }
-
-  public String getPerfumer() {
-    return perfumer;
-  }
-
-  public void setPerfumer(String perfumer) {
-    this.perfumer = perfumer;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public String getImgPath() {
-    return imgPath;
-  }
-
-  public void setImgPath(String imgPath) {
-    this.imgPath = imgPath;
-  }
-
 
   public void addNote(Note note, char noteType) {
     PerfumeNote perfumeNote = new PerfumeNote(this, note, noteType);

@@ -1,9 +1,9 @@
-package com.github.remusselea.scentdb.mapping;
+package com.github.remusselea.scentdb.dto.mapper;
 
-import com.github.remusselea.scentdb.data.Perfume;
-import com.github.remusselea.scentdb.data.PerfumeNote;
-import com.github.remusselea.scentdb.model.note.NoteDto;
-import com.github.remusselea.scentdb.model.perfume.PerfumeDto;
+import com.github.remusselea.scentdb.dto.model.note.NoteDto;
+import com.github.remusselea.scentdb.dto.model.perfume.PerfumeDto;
+import com.github.remusselea.scentdb.model.entity.Perfume;
+import com.github.remusselea.scentdb.model.entity.PerfumeNote;
 import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;

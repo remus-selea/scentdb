@@ -1,7 +1,7 @@
-package com.github.remusselea.scentdb.model.response;
+package com.github.remusselea.scentdb.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.remusselea.scentdb.model.note.NoteDto;
+import com.github.remusselea.scentdb.dto.model.note.NoteDto;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;

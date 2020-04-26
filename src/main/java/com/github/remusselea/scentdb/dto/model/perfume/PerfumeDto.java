@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.model.perfume;
+package com.github.remusselea.scentdb.dto.model.perfume;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

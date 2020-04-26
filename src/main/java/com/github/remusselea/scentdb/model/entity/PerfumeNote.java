@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.data;
+package com.github.remusselea.scentdb.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
@@ -10,9 +10,13 @@ import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity(name = "PerfumeNote")
 @Table(name = "perfume_notes")
+@Getter
+@Setter
 public class PerfumeNote implements Serializable {
 
   @EmbeddedId
@@ -66,35 +70,4 @@ public class PerfumeNote implements Serializable {
     return Objects.hash(perfume, note);
   }
 
-  public PerfumeNoteId getPerfumeNoteId() {
-    return perfumeNoteId;
-  }
-
-  public void setPerfumeNoteId(PerfumeNoteId perfumeNoteId) {
-    this.perfumeNoteId = perfumeNoteId;
-  }
-
-  public Perfume getPerfume() {
-    return perfume;
-  }
-
-  public void setPerfume(Perfume perfume) {
-    this.perfume = perfume;
-  }
-
-  public Note getNote() {
-    return note;
-  }
-
-  public void setNote(Note note) {
-    this.note = note;
-  }
-
-  public char getNoteType() {
-    return noteType;
-  }
-
-  public void setNoteType(char noteType) {
-    this.noteType = noteType;
-  }
 }

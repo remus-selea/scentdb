@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "perfumes.images.dir",
+      "type": "java.lang.String",
+      "description": "Directory where perfume images are stored."
+    },
+    {
+      "name": "notes.images.dir",
+      "type": "java.lang.String",
+      "description": "Directory where note images are stored."
+    }
+  ] }

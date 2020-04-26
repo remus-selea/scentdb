@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.model.perfume;
+package com.github.remusselea.scentdb.dto.model.perfume;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public class PerfumeNoteDto {
 
   private List<Long> notes = new ArrayList<>();
 
-  public void addNote(Long noteId) {
+  public void addNoteId(Long noteId) {
     notes.add(noteId);
   }
 

@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.data;
+package com.github.remusselea.scentdb.model.entity;
 
 import java.io.Serializable;
 import java.util.Objects;
