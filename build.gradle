@@ -1,12 +1,12 @@
 plugins {
     id "org.springframework.boot" version "${springBoot}"
     id 'io.spring.dependency-management' version "${springDependencyManagement}"
-    id "org.sonarqube" version "${sonarQube}"
+    id "org.sonarqube" version "${sonarQubePlugin}"
     id 'java'
 }
 
 group = 'com.github.remus-selea'
-version = "${major}"+"${minor}"+"${patch}"
+version = "${major}" + "." + "${minor}" + "." + "${patch}"
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
@@ -30,12 +30,11 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    /** Spring boot admin client **/
+    /** SPRING CLOUD SLEUTH **/
+    implementation "org.springframework.cloud:spring-cloud-starter-sleuth:${springCloudSleuth}"
+
+    /** SPRING BOOT ADMIN CLIENT **/
     implementation "de.codecentric:spring-boot-admin-starter-client:${springBootAdmin}"
-
-    /** LogStash **/
-    compile "net.logstash.logback:logstash-logback-encoder:${logstashLogBackEncoder}"
-
 
     /** LOMBOK **/
     compileOnly "org.projectlombok:lombok"
@@ -53,6 +52,12 @@ dependencies {
     /** MAPSTRUCT **/
     implementation "org.mapstruct:mapstruct:${mapstruct}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstruct}"
+
+    /** LOGSTASH LOGBACK ENCODER **/
+    compile "net.logstash.logback:logstash-logback-encoder:${logstashLogBackEncoder}"
+
+    /** # LOGBACK CONDITIONALS **/
+     compile "org.codehaus.janino:janino:${janino}"
 
     /** TESTING  **/
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
