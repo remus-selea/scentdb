@@ -1,29 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+  <springProperty name="logHost" source="scentdb.logstash.host" />
+  <springProperty name="logstashEnabled" source="scentdb.logstash.enabled" />
+
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <layout class="ch.qos.logback.classic.PatternLayout">
       <Pattern>
         %green(%d{yyyy-MM-dd HH:mm:ss}) %magenta([%thread]) %blue(%-5level) %yellow(%logger{36}) - %msg%n
       </Pattern>
     </layout>
+
   </appender>
-
-  <appender name="STASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-    <destination>localhost:5000</destination>
-    <!-- encoder is required -->
-    <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
-
-    <keepAliveDuration>5 minutes</keepAliveDuration>
-  </appender>
-
   <root level="INFO">
     <appender-ref ref="STDOUT"/>
   </root>
 
-  <springProfile name="h2">
-    <root level="INFO">
-      <appender-ref ref="STASH"/>
-    </root>
-  </springProfile>
+  <if condition='${logstashEnabled} == true'>
+    <then>
+
+      <appender name="STASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logHost}</destination>
+        <!-- encoder is required -->
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+        <keepAliveDuration>5 minutes</keepAliveDuration>
+      </appender>
+
+      <root level="INFO">
+        <appender-ref ref="STASH"/>
+      </root>
+
+    </then>
+  </if>
+
+
 
 </configuration>

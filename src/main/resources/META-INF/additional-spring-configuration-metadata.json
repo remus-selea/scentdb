@@ -9,5 +9,15 @@
       "name": "notes.images.dir",
       "type": "java.lang.String",
       "description": "Directory where note images are stored."
+    },
+    {
+      "name": "scentdb.logstash.host",
+      "type": "java.lang.String",
+      "description": "The hostname of the logstash docker container."
+    },
+    {
+      "name": "scentdb.logstash.enabled",
+      "type": "java.lang.String",
+      "description": "The environment variable that defines if logstash is enabled in order to activate a logback appender to it."
     }
   ] }
