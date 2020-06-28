@@ -1,4 +1,4 @@
-version: '3.2'
+version: '3.6'
 
 services:
   elasticsearch:
@@ -61,10 +61,12 @@ services:
 
   scentdb:
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile
     volumes:
-      - /data/springboot-docker-compose-app
+      - type: bind
+        source: D:/Dev/project/scentdb/images # local directory where images are stored
+        target: /app/images
     ports:
       - "8321:8321"
     networks:
@@ -73,6 +75,7 @@ services:
       SPRING_PROFILES_ACTIVE: h2
       LOGSTASH_HOST: logstash:5000
       LOGSTASH_ENABLED: "true"
+      IMAGES_PATH: /app/images
     depends_on:
       - logstash
 
@@ -82,5 +85,6 @@ networks:
 
 volumes:
   elasticsearch:
+  images:
 
 
