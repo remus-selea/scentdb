@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class PerfumeController {
 
-  private PerfumeService perfumeService;
+  private final PerfumeService perfumeService;
 
   public PerfumeController(PerfumeService perfumeService) {
     this.perfumeService = perfumeService;
@@ -61,6 +61,7 @@ public class PerfumeController {
   @PostMapping("/perfumes")
   public PerfumeResponse savePerfume(@RequestParam("image") MultipartFile imageFile,
       @RequestParam("perfume") String perfume) {
+    log.info("Saving a perfume");
     PerfumeRequest perfumeRequest = deserializeStringToPerfumeRequest(perfume);
 
     return perfumeService.savePerfume(perfumeRequest, imageFile);
