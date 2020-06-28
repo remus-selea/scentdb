@@ -23,7 +23,7 @@ public class Note implements Serializable {
   @Column(name = "note_id")
   private long noteId;
 
-  @Column(name = "note_name")
+  @Column(name = "note_name", unique = true)
   private String noteName;
 
   @Column(name = "img_path")

@@ -5,6 +5,7 @@ import com.github.remusselea.scentdb.dto.model.note.NoteDto;
 import com.github.remusselea.scentdb.dto.request.NoteRequest;
 import com.github.remusselea.scentdb.dto.response.NoteResponse;
 import com.github.remusselea.scentdb.exception.FileStorageException;
+import com.github.remusselea.scentdb.exception.ScentdbBusinessUncheckedException;
 import com.github.remusselea.scentdb.model.entity.Note;
 import com.github.remusselea.scentdb.model.repo.NoteRepository;
 import java.io.IOException;
@@ -92,6 +93,13 @@ public class NoteService {
    */
   public NoteResponse saveNote(NoteRequest noteRequest,
       MultipartFile file) {
+    boolean noteExists = noteRepository.existsNoteByNoteName(noteRequest.getNoteName());
+
+    if (noteExists) {
+      log.error("A note with name : {} was already found to be existing in the database.",
+          noteRequest.getNoteName());
+      throw new ScentdbBusinessUncheckedException("Cannot save duplicate notes in the database");
+    }
 
     String fileName = storeImage(file);
     String noteImgPath = ServletUriComponentsBuilder.fromCurrentContextPath()
