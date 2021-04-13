@@ -16,3 +16,17 @@ INSERT INTO notes (note_id, note_name, img_path) VALUES (14, 'Tuberose', 'http:/
 INSERT INTO notes (note_id, note_name, img_path) VALUES (15, 'Peach', 'http://localhost:8321/scentdb/v1/images/notes/peach.jpg');
 
 
+INSERT INTO perfumes(perfume_id,BRAND,DESCRIPTION,GENDER,IMG_PATH,LAUNCH_YEAR,PERFUMER,TITLE) VALUES(1,'Amouage','Interlude Man is a popular perfume by Amouage for men and was released in 2012. The scent is smoky-spicy. Projection and longevity are above-average. It is being marketed by Oman Perfumery',
+                                                                                                     'MEN','http://localhost:8321/scentdb/v1/images/perfumes/amouage-im.jpg','2012','Pierre Negrin','Amouage Interlude Men');
+
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,1,'b');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,2,'m');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,3,'t');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,4,'t');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,5,'m');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,6,'t');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,7,'m');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,8,'m');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,9,'b');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,10,'b');
+INSERT INTO perfume_notes (perfume_perfume_id, note_note_id, notes_type) VALUES (1,11,'b');

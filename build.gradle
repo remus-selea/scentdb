@@ -66,6 +66,9 @@ dependencies {
     testImplementation "org.springframework.security:spring-security-test"
     testCompile "org.mockito:mockito-core:${mockito}"
 
+    // Test containers
+    testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
+
     // If you are using mapstruct in test code
     testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstruct}"
 }
