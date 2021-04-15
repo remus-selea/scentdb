@@ -23,8 +23,8 @@ addons:
 
 jobs:
   include:
-    - stage: tests
-      script: ./gradlew tests --scan --no-daemon
+    - stage: test
+      script: ./gradlew test --scan --no-daemon
               ./gradlew sonarqube --no-daemon
     - stage: build & deploy
       script: ./gradlew build --scan --no-daemon
