@@ -24,7 +24,7 @@ addons:
 
 script:
   # other script steps might be done before running the actual analysis
-  - ./gradlew build --scan -s
+  - ./gradlew clean build
   - ./gradlew sonarqube
   - docker build -t scentdb .
 
