@@ -23,14 +23,12 @@ addons:
 
 jobs:
   include:
-    - stage: assemble
-      script: ./gradlew assemble --scan --no-daemon
-    - stage: test
+    - stage: tests
       script: ./gradlew tests --scan --no-daemon
-    - stage: sonarqube
-      script: ./gradlew sonarqube --no-daemon
-    - stage: deploy
-      script: docker build -t scentdb .
+              ./gradlew sonarqube --no-daemon
+    - stage: build & deploy
+      script: ./gradlew build --scan --no-daemon
+              docker build -t scentdb .
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
