@@ -21,12 +21,23 @@ addons:
   sonarcloud:
     organization: "nardile" # To find your organization, go to: https://sonarcloud.io/account/organizations
 
+stages:
+  - assemble
+  - test
+  - sonarqube
+  - deploy
 
-script:
-  # other script steps might be done before running the actual analysis
-  - ./gradlew clean build
-  - ./gradlew sonarqube
-  - docker build -t scentdb .
+
+jobs:
+  include:
+    - stage: assemble
+      script: ./gradlew assemble --scan --no-daemon
+    - stage: test
+      script: ./gradlew tests --scan --no-daemon
+    - stage: sonarqube
+      script: ./gradlew sonarqube --no-daemon
+    - stage: deploy
+      script: docker build -t scentdb .
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
