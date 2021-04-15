@@ -9,6 +9,7 @@ env:
    global:
     - secure: "HhMawiYpPN3Vcpbvj1oDpCMeTQluB/+rczz5jVmqKwzPx5Mv7ECkrzma5arSALTUEM9WwUl5GxXyVWWtvtu1hFpMaVGp+zk9NL/JY+/e5gwAOK536CtTK8yBswZl5/Qxofeblfu3dA2QLsTI2i78XMrYK/BCN49NXZD7D9jFwR9BUHqhdFoYBJAKFZv0AcrkN+qaPz+YIZzLzWpkn6e8+4JyU63txxjmfvVqArvDic/zMWWI6ZNiVPXNEyWEonheZxlbAYjs5qfm3fc7NX0vMK7npKFaR1Hd3V6MdVSjmyb9drCPiBWcBF7D4rb7hoLU9O6DPCCNHmS3Aw5nVe4lmlARNp76WGZaUsopb31LtSZMR5UIBMzH7nNlE/BItzerzgdBVvEwLgqTTosjxadfJxbUn/x8lTVUB7L0cY26RRGf24GxlsaG/rfXojMFXhoU7nkCGhgmprO54055zqRq0c7aE5EyP0y92EIe65/CJowijyyqQ3YYewNJGxAHizzGqToMhK0MHtKr/Bw/HkAioWKCJnPHXPzIAkR3ImCPbWp2XRsUl/Y1k0cQ29MwCMS4zHWLRzNFJX8MHoKSTtXAtZRFk9zthyDCGy8ti2TOzclX4uc8E7o9nhC16lnZgTMWDOpIw4bMEHzCADEZbrkcZmRLlhee1OelEkiUQV+l3jI="
     - secure: "OGJn+AffnJ9w719iEaJUWdgeUEgiMRAcNx8Ygv02nR8fr7ik9Ew35/9pEk3m9xZvdtiwFDSZyT6EoA26O3SqVjJiG4YEoIlbVvDHpYKCtbAeMX0BBXUxnN7mmfc39zAUBUqzAb5VpwqTTLtiArWAgfaYeWDrWJe/klk+EqkeQM5KGwtYpwixSj1iNdQBZf2OMzS4YO/ds+BhzuYHvwr3LAD2olIcT1SDLAIl3uOUpbkF6kT/Pxx7LOEfV0XrxLn5R9lbXTBLMoWGJFdscnpR0VYaJkCuCYZZow9CabnJbd6aX8ppw+Y67K8NLUDv+0AlH3ATfbVsMIH/KF6tqU9sWc56vL647dTP6TpzSH9HlhHbkkTP3H1fsw1rZ9x2nTlJexyGGm6B48BNVhE7yHOAiz9MRh/PVDyzJYQD64jrAcDk1E2UQOpaP0aS4fSBkTPJSqYX/HnKrKbHrnYAAsCYYO9KK3r1HwINRohei2+J+hfa6JHKmeyrcdz6HQ1cpwbXv21NovBO2lp/f41LJVixQJZ4J4Tyc2pHdpBnvvZ3kb21ThUM/yOqffi8+dmLvxtKClkDwglgsJ/3d5XdXCdJdkh8Aqi2rp3IPhV/35eXprYQjT2tlXEOB9B9tLS02nCkxei5Ms1WxKgL0Wfv62AyDpZYbgsJ0mcsg4wNbW8kpBo="
+    - COMMIT=${TRAVIS_COMMIT::7}
 
 services:
   - docker
@@ -26,9 +27,18 @@ script:
   - ./gradlew sonarqube
   - docker build -t scentdb .
 
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
 after_success:
   - docker login -u $DOCKER_USER -p $DOCKER_PASS
-  - docker tag scentdb $DOCKER_USER/scentdb:$TRAVIS_BUILD_NUMBER
-  - docker push $DOCKER_USER/scentdb:$TRAVIS_BUILD_NUMBER
-  - docker tag scentdb $DOCKER_USER/scentdb:latest
-  - docker push $DOCKER_USER/scentdb:latest
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH; fi`
+  - export IMAGE_NAME=sivaprasadreddy/jblogger
+  - docker build -t $IMAGE_NAME:$COMMIT .
+  - docker tag $IMAGE_NAME:$COMMIT $IMAGE_NAME:$TAG
+  - docker push $IMAGE_NAME

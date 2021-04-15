@@ -2,9 +2,7 @@ FROM adoptopenjdk:11-jre-hotspot
 
 MAINTAINER remus.selea@gmail.com
 
-ENV APP_HOME=/usr/app/
-
-WORKDIR $APP_HOME
+VOLUME /tmp
 
 COPY ./build/libs/* ./app.jar
 
