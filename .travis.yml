@@ -21,13 +21,6 @@ addons:
   sonarcloud:
     organization: "nardile" # To find your organization, go to: https://sonarcloud.io/account/organizations
 
-stages:
-  - assemble
-  - test
-  - sonarqube
-  - deploy
-
-
 jobs:
   include:
     - stage: assemble
