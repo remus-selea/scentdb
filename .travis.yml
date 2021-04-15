@@ -25,9 +25,8 @@ jobs:
   include:
     - stage: run tests
     - script:
-      - ./gradlew tests --scan --no-daemon
-    - # stage name not required, will continue to use `test`
-      script: ./gradlew sonarqube --no-daemon
+      - ./gradlew test --scan --no-daemon
+      - ./gradlew sonarqube --no-daemon
     - stage: build & deploy
     - script:
       - ./gradlew build --scan --no-daemon
