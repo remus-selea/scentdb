@@ -23,6 +23,7 @@ addons:
 script:
   # other script steps might be done before running the actual analysis
   - ./gradlew sonarqube
+  - docker build -t scentdb .
 
 after_success:
   - docker login -u $DOCKER_USER -p $DOCKER_PASS
