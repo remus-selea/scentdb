@@ -29,6 +29,9 @@ public class Note implements Serializable {
   @Column(name = "img_path")
   private String imgPath;
 
+  @Column(name = "description", columnDefinition = "TEXT")
+  private String description;
+
   /**
    * The JPA specification requires that all persistent classes have a no-arg constructor.
    */

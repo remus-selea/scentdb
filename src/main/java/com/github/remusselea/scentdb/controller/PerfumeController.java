@@ -6,6 +6,7 @@ import com.github.remusselea.scentdb.dto.request.PerfumeRequest;
 import com.github.remusselea.scentdb.dto.response.PerfumeResponse;
 import com.github.remusselea.scentdb.service.PerfumeService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/scentdb/v1")
 @Slf4j
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class PerfumeController {
 
   private final PerfumeService perfumeService;
@@ -59,12 +61,12 @@ public class PerfumeController {
    * @return the saved perfume.
    */
   @PostMapping("/perfumes")
-  public PerfumeResponse savePerfume(@RequestParam("image") MultipartFile imageFile,
+  public PerfumeResponse savePerfume(@RequestParam("image")  MultipartFile[] imageFiles,
       @RequestParam("perfume") String perfume) {
     log.info("Saving a perfume");
     PerfumeRequest perfumeRequest = deserializeStringToPerfumeRequest(perfume);
 
-    return perfumeService.savePerfume(perfumeRequest, imageFile);
+    return perfumeService.savePerfume(perfumeRequest, imageFiles);
   }
 
 
@@ -76,11 +78,11 @@ public class PerfumeController {
    * @return the updated perfume.
    */
   @PutMapping("/perfumes/{perfumeId}")
-  public PerfumeResponse updatePerfume(@RequestParam("image") MultipartFile imageFile,
+  public PerfumeResponse updatePerfume(@RequestParam("image") MultipartFile[] imageFiles,
       @RequestParam("perfume") String perfume, @PathVariable Long perfumeId) {
     PerfumeRequest perfumeRequest = deserializeStringToPerfumeRequest(perfume);
 
-    return perfumeService.savePerfume(perfumeRequest, imageFile);
+    return perfumeService.savePerfume(perfumeRequest, imageFiles);
   }
 
 

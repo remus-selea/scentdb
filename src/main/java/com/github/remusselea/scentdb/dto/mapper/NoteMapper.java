@@ -12,10 +12,12 @@ public interface NoteMapper {
 
   @Mapping(source = "perfumeNote.note.noteName", target = "noteName")
   @Mapping(source = "perfumeNote.note.imgPath", target = "imgPath")
+  @Mapping(source = "perfumeNote.note.description", target = "description")
   NoteDto perfumeNoteToNoteDto(PerfumeNote perfumeNote);
 
   @Mapping(source = "noteName", target = "noteName")
   @Mapping(source = "imgPath", target = "imgPath")
+  @Mapping(source = "description", target = "description")
   NoteDto noteToNoteDto(Note note);
 
   Note convertNoteRequestToNote(NoteRequest noteRequest);

@@ -7,6 +7,7 @@ import com.github.remusselea.scentdb.dto.response.NoteResponse;
 import com.github.remusselea.scentdb.service.NoteService;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @RestController
 @RequestMapping("/scentdb/v1")
+@CrossOrigin(origins = "http://localhost:3000")
 public class NoteController {
 
   private NoteService noteService;

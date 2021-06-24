@@ -14,4 +14,6 @@ public class NoteDto {
   @JsonProperty("imgPath")
   private String imgPath;
 
+  private String description;
+
 }

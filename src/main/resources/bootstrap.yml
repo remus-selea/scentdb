@@ -1,4 +1,4 @@
 scentdb:
   logstash:
-    host: ${LOGSTASH_HOST:localhost:5000}
+    host: ${LOGSTASH_HOST:localhost}:${LOGSTASH_CONTAINER_PORT:5000}
     enabled: ${LOGSTASH_ENABLED:false} # default, when not using docker-compose set to false

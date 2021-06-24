@@ -2,6 +2,7 @@ version: '3.6'
 
 services:
   elasticsearch:
+    container_name: ${ELASTICSEARCH_CONTAINER_NAME}
     image: elasticsearch:$ELK_VERSION
     volumes:
       - type: bind
@@ -12,18 +13,20 @@ services:
         source: elasticsearch
         target: /usr/share/elasticsearch/data
     ports:
-      - "9200:9200"
+      - ${ELASTICSEARCH_HOST_PORT}:${ELASTICSEARCH_CONTAINER_PORT}
       - "9300:9300"
     environment:
       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-      ELASTIC_PASSWORD: elastic
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       # Use single node discovery in order to disable production mode and avoid bootstrap checks
       # see https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
       discovery.type: single-node
     networks:
-      - scentdb-elk
+      - scentdb-network
 
   logstash:
+    container_name: ${LOGSTASH_CONTAINER_NAME}
     image: logstash:$ELK_VERSION
     volumes:
       - type: bind
@@ -35,17 +38,18 @@ services:
         target: /usr/share/logstash/pipeline
         read_only: true
     ports:
-      - "5000:5000/tcp"
+      - ${LOGSTASH_HOST_PORT}:${LOGSTASH_CONTAINER_PORT}/tcp
       - "5000:5000/udp"
       - "9600:9600"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
-      - scentdb-elk
+      - scentdb-network
     depends_on:
       - elasticsearch
 
   kibana:
+    container_name: kibana_scentdb
     image: kibana:$ELK_VERSION
     volumes:
       - type: bind
@@ -55,36 +59,86 @@ services:
     ports:
       - "5601:5601"
     networks:
-      - scentdb-elk
+      - scentdb-network
     depends_on:
       - elasticsearch
 
+  postgres:
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    image: postgres:$POSTGRES_VERSION
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: "/data/postgres"
+    volumes:
+      - postgres:/data/postgres
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - ${POSTGRES_HOST_PORT}:${POSTGRES_CONTAINER_PORT}
+    networks:
+      - scentdb-network
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin_scentdb
+    image: dpage/pgadmin4:$PGADMIN_VERSION
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json
+    ports:
+      - ${PGADMIN_HOST_PORT}:${PGADMIN_CONTAINER_PORT}
+    networks:
+      - scentdb-network
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - "/bin/echo 'postgres:5432:*:postgres:password' > /tmp/pgpassfile && chmod 600 /tmp/pgpassfile && /entrypoint.sh"
+    restart: unless-stopped
+
   scentdb:
+    container_name: scentdb
     build:
       context: .
       dockerfile: Dockerfile
+    image: scentdb:latest
     volumes:
       - type: bind
-        source: D:/Dev/project/scentdb/images # local directory where images are stored
+        source: ${IMAGES_DIRECTORY_PATH}
         target: /app/images
     ports:
-      - "8321:8321"
+      - ${SCENTDB_HOST_PORT}:${SCENTDB_CONTAINER_PORT}
     networks:
-      - scentdb-elk
+      - scentdb-network
+    restart: on-failure
     environment:
-      SPRING_PROFILES_ACTIVE: h2
-      LOGSTASH_HOST: logstash:5000
-      LOGSTASH_ENABLED: "true"
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      DATABASE_HOST: ${POSTGRES_CONTAINER_NAME}
+      DATABASE_PORT: ${POSTGRES_CONTAINER_PORT}
+      LOGSTASH_ENABLED: ${LOGSTASH_ENABLED}
+      LOGSTASH_HOST: ${LOGSTASH_CONTAINER_NAME}
+      LOGSTASH_PORT: ${LOGSTASH_CONTAINER_PORT}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_CONTAINER_NAME}
+      ELASTICSEARCH_PORT: ${ELASTICSEARCH_CONTAINER_PORT}
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       IMAGES_PATH: /app/images
     depends_on:
+      - elasticsearch
       - logstash
+      - postgres
 
 networks:
-  scentdb-elk:
+  scentdb-network:
     driver: bridge
 
 volumes:
   elasticsearch:
   images:
-
+  postgres:
+  pgadmin:
 

@@ -17,4 +17,7 @@ public class NoteRequest {
   @JsonProperty("imgPath")
   private String imgPath;
 
+  @JsonProperty("description")
+  private String description;
+
 }

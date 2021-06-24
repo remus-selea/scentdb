@@ -7,7 +7,7 @@ import com.github.remusselea.scentdb.dto.response.NoteResponse;
 import com.github.remusselea.scentdb.exception.FileStorageException;
 import com.github.remusselea.scentdb.exception.ScentdbBusinessUncheckedException;
 import com.github.remusselea.scentdb.model.entity.Note;
-import com.github.remusselea.scentdb.model.repo.NoteRepository;
+import com.github.remusselea.scentdb.repo.NoteRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

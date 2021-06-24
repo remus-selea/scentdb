@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "Postgres": {
+      "Name": "Docker PostgreSQL 13",
+      "Port": 5432,
+      "Group": "Servers",
+      "SSLMode": "prefer",
+      "Username": "postgres",
+      "Host": "postgres_scentdb",
+      "MaintenanceDB": "postgres"
+    }
+  }
+}

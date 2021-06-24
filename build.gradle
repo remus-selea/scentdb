@@ -5,6 +5,12 @@ plugins {
     id 'java'
 }
 
+bootJar {
+    layered {
+        enabled = true
+    }
+}
+
 group = 'com.github.remus-selea'
 version = "${major}" + "." + "${minor}" + "." + "${patch}"
 sourceCompatibility = JavaVersion.VERSION_11
@@ -35,6 +41,8 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-hateoas"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     /** SPRING CLOUD SLEUTH **/
@@ -64,7 +72,7 @@ dependencies {
     compile "net.logstash.logback:logstash-logback-encoder:${logstashLogBackEncoder}"
 
     /** # LOGBACK CONDITIONALS **/
-     compile "org.codehaus.janino:janino:${janino}"
+    compile "org.codehaus.janino:janino:${janino}"
 
     /** TESTING  **/
     testImplementation("org.springframework.boot:spring-boot-starter-test") {

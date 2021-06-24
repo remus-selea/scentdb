@@ -1,4 +1,4 @@
-package com.github.remusselea.scentdb.model.repo;
+package com.github.remusselea.scentdb.repo;
 
 import com.github.remusselea.scentdb.model.entity.Perfume;
 import org.springframework.data.jpa.repository.JpaRepository;

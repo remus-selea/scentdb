@@ -1,16 +1,19 @@
 package com.github.remusselea.scentdb.service;
 
 import com.github.remusselea.scentdb.dto.mapper.NoteMapper;
+import com.github.remusselea.scentdb.dto.mapper.PerfumeImageMapper;
 import com.github.remusselea.scentdb.dto.mapper.PerfumeMapper;
 import com.github.remusselea.scentdb.dto.model.note.NoteDto;
 import com.github.remusselea.scentdb.dto.model.perfume.PerfumeDto;
+import com.github.remusselea.scentdb.dto.model.perfume.PerfumeImageDto;
 import com.github.remusselea.scentdb.dto.request.PerfumeRequest;
 import com.github.remusselea.scentdb.dto.response.PerfumeResponse;
 import com.github.remusselea.scentdb.exception.FileStorageException;
 import com.github.remusselea.scentdb.model.entity.Note;
 import com.github.remusselea.scentdb.model.entity.Perfume;
+import com.github.remusselea.scentdb.model.entity.PerfumeImage;
 import com.github.remusselea.scentdb.model.entity.PerfumeNote;
-import com.github.remusselea.scentdb.model.repo.PerfumeRepository;
+import com.github.remusselea.scentdb.repo.PerfumeRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,9 +42,10 @@ public class PerfumeService {
 
   private NoteMapper noteMapper;
 
+  private PerfumeImageMapper perfumeImageMapper;
+
   @Value("${perfumes.images.dir:${user.home}}")
   public String uploadDir;
-
 
   /**
    * All args constructor.
@@ -51,10 +55,12 @@ public class PerfumeService {
    * @param noteMapper        mapper that maps notes to dto.
    */
   public PerfumeService(PerfumeRepository perfumeRepository,
-      PerfumeMapper perfumeMapper, NoteMapper noteMapper) {
+      PerfumeMapper perfumeMapper, NoteMapper noteMapper,
+      PerfumeImageMapper perfumeImageMapper) {
     this.perfumeRepository = perfumeRepository;
     this.perfumeMapper = perfumeMapper;
     this.noteMapper = noteMapper;
+    this.perfumeImageMapper = perfumeImageMapper;
   }
 
   /**
@@ -97,16 +103,21 @@ public class PerfumeService {
    * @param perfumeRequest the object containing the data of a perfume to be created or updated.
    * @return returns a {@link PerfumeResponse} containing the perfume saved in the database.
    */
-  public PerfumeResponse savePerfume(PerfumeRequest perfumeRequest, MultipartFile imageFile) {
+  public PerfumeResponse savePerfume(PerfumeRequest perfumeRequest, MultipartFile[] imageFiles) {
     Perfume perfumeToSave = perfumeMapper.perfumeRequestToPerfume(perfumeRequest);
 
-    String fileName = storeImage(imageFile);
-    String perfumeImgPath = ServletUriComponentsBuilder.fromCurrentContextPath()
-        .path("/scentdb/v1/images/perfumes/")
-        .path(fileName)
-        .toUriString();
+    for (MultipartFile multipartImageFile : imageFiles) {
+      String imageFileName = storeImage(multipartImageFile);
 
-    perfumeToSave.setImgPath(perfumeImgPath);
+      String perfumeImagePath = ServletUriComponentsBuilder.fromCurrentContextPath()
+          .path("/scentdb/v1/images/perfumes/")
+          .path(imageFileName)
+          .toUriString();
+
+      PerfumeImage perfumeImage = new PerfumeImage();
+      perfumeImage.setImagePath(perfumeImagePath);
+      perfumeToSave.addPerfumeImage(perfumeImage);
+    }
 
     Perfume savedPerfume = perfumeRepository.save(perfumeToSave);
 
@@ -140,6 +151,15 @@ public class PerfumeService {
   private void addInfoToPerfumeResponse(PerfumeResponse perfumeResponse, Perfume perfume) {
     // map perfume to perfumeDto
     PerfumeDto perfumeDto = perfumeMapper.perfumeToPerfumeDto(perfume);
+
+    List<PerfumeImageDto> perfumeImageDtoList = new ArrayList<>(perfume.getPerfumeImages().size());
+    for (PerfumeImage perfumeImage : perfume.getPerfumeImages()) {
+      PerfumeImageDto perfumeImageDto = perfumeImageMapper
+          .perfumeImageToPerfumeImageDto(perfumeImage);
+      perfumeImageDtoList.add(perfumeImageDto);
+    }
+    perfumeDto.setPerfumeImageDtoList(perfumeImageDtoList);
+
     // add each mapped perfumeDto into the perfumeDtoList of perfumeResponse
     perfumeResponse.getPerfumeDtoList().add(perfumeDto);
 

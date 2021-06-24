@@ -1,0 +1,3 @@
+CREATE USER scentdb;
+CREATE DATABASE scentdb;
+GRANT ALL PRIVILEGES ON DATABASE scentdb TO scentdb;

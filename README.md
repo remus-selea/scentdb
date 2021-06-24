@@ -13,15 +13,9 @@
 The backend of an online fragrance database cataloguing and presenting perfumes, perfumers, brands and aromas all of which are to be searchable.
 ScentDB aspires to provide a comprehensive set of resources about fragrances through a REST API.
 
-## Building the ScentDB locally
+## Building and starting ScentDB locally
 
-1. Clone this Git repository.
-1. Go to the project root directory.
-1. Build the project with `gradlew clean assemble`.
-
-## Starting ScentDB locally
-
-Set the active spring profile to `h2`.
-
-TODO
-
+1. Open a terminal in the root directory of the project.
+2. Build the project with `gradlew clean assemble`.
+3. Build the application docker image with `docker build .`.
+4. Start the application stack with `docker-compose up`.

@@ -1,6 +1,7 @@
 package com.github.remusselea.scentdb.dto.model.perfume;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.remusselea.scentdb.dto.model.perfumer.PerfumerDto;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,10 +23,15 @@ public class PerfumeDto {
 
   private Gender gender;
 
-  private String perfumer;
+  private Type perfumeType;
+
+  private String bottleSizes;
+
+  private PerfumerDto perfumer;
 
   private String description;
 
-  private String imgPath;
+  @JsonProperty("images")
+  private List<PerfumeImageDto> perfumeImageDtoList;
 
 }

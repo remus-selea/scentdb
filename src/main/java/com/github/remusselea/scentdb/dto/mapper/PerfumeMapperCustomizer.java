@@ -3,10 +3,12 @@ package com.github.remusselea.scentdb.dto.mapper;
 import com.github.remusselea.scentdb.dto.model.note.NoteDto;
 import com.github.remusselea.scentdb.dto.model.perfume.PerfumeDto;
 import com.github.remusselea.scentdb.dto.model.perfume.PerfumeNoteDto;
+import com.github.remusselea.scentdb.dto.model.perfume.Type;
 import com.github.remusselea.scentdb.dto.request.PerfumeRequest;
 import com.github.remusselea.scentdb.model.entity.Note;
 import com.github.remusselea.scentdb.model.entity.Perfume;
 import com.github.remusselea.scentdb.model.entity.PerfumeNote;
+import com.github.remusselea.scentdb.model.entity.Perfumer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +37,7 @@ public class PerfumeMapperCustomizer {
    */
   @AfterMapping
   public void afterMappingPerfumeToPerfumeDto(Perfume perfume,
-                                              @MappingTarget PerfumeDto perfumeDto) {
+      @MappingTarget PerfumeDto perfumeDto) {
     if (perfume.getPerfumeNotes() == null) {
       log.warn("No perfume notes found for perfume {}", perfume);
     }
@@ -66,7 +68,7 @@ public class PerfumeMapperCustomizer {
    */
   @AfterMapping
   public void afterMappingPerfumeRequestToPerfume(PerfumeRequest perfumeRequest,
-                                                  @MappingTarget Perfume perfume) {
+      @MappingTarget Perfume perfume) {
     Map<Long, NoteDto> noteDtoMap = perfumeRequest.getNoteDtoMap();
 
     for (PerfumeNoteDto perfumeNoteDto : perfumeRequest.getPerfumeDto().getPerfumeNoteDtoList()) {

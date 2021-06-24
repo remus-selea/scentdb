@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface PerfumeMapper {
 
   @Mapping(target = "perfumeNoteDtoList", ignore = true)
+  @Mapping(target = "perfumer", ignore = true)
   PerfumeDto perfumeToPerfumeDto(Perfume perfume);
 
   @Mapping(target = "perfumeId", source = "perfumeDto.perfumeId")
@@ -17,9 +18,9 @@ public interface PerfumeMapper {
   @Mapping(target = "brand", source = "perfumeDto.brand")
   @Mapping(target = "launchYear", source = "perfumeDto.launchYear")
   @Mapping(target = "gender", source = "perfumeDto.gender")
-  @Mapping(target = "perfumer", source = "perfumeDto.perfumer")
+  @Mapping(target = "perfumeType", source = "perfumeDto.perfumeType")
+  @Mapping(target = "bottleSizes", source = "perfumeDto.bottleSizes")
   @Mapping(target = "description", source = "perfumeDto.description")
-  @Mapping(target = "imgPath", ignore = true)
   @Mapping(target = "perfumeNotes", ignore = true)
   Perfume perfumeRequestToPerfume(PerfumeRequest perfumeRequest);
 
