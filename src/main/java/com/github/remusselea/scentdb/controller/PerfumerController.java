@@ -1,8 +1,11 @@
 package com.github.remusselea.scentdb.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.remusselea.scentdb.dto.model.perfumer.PerfumerDto;
+import com.github.remusselea.scentdb.dto.request.PerfumerModel;
+import com.github.remusselea.scentdb.dto.view.View.PerfumerView;
 import com.github.remusselea.scentdb.service.PerfumerService;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -53,13 +56,14 @@ public class PerfumerController {
    * @param perfumer the perfumer request body.
    * @return the saved perfumer.
    */
+  @JsonView(value = PerfumerView.class)
   @PostMapping("/perfumers")
   public PerfumerDto savePerfumer(@RequestParam("image")  MultipartFile imageFile,
       @RequestParam("perfumer") String perfumer) {
     log.info("Saving a perfumer");
-    PerfumerDto perfumerDto = deserializeStringToPerfumerDto(perfumer);
+    PerfumerModel perfumerModel = deserializeStringToPerfumerModel(perfumer);
 
-    return perfumerService.savePerfumer(perfumerDto, imageFile);
+    return perfumerService.savePerfumer(perfumerModel, imageFile);
   }
 
   @DeleteMapping("/perfumers/{perfumerId}")
@@ -69,14 +73,14 @@ public class PerfumerController {
   }
 
 
-  private PerfumerDto deserializeStringToPerfumerDto(String perfumer) {
-    PerfumerDto perfumerDto = null;
+  private PerfumerModel deserializeStringToPerfumerModel(String perfumer) {
+    PerfumerModel perfumerModel = null;
     try {
-      perfumerDto = new ObjectMapper().readValue(perfumer, PerfumerDto.class);
+      perfumerModel = new ObjectMapper().readValue(perfumer, PerfumerModel.class);
     } catch (JsonProcessingException e) {
       log.error("Could not parse perfumer string, cause {0}", e);
     }
-    return perfumerDto;
+    return perfumerModel;
   }
 
 

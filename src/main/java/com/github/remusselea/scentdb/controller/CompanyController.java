@@ -1,9 +1,11 @@
 package com.github.remusselea.scentdb.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.remusselea.scentdb.dto.model.company.CompanyDto;
-import com.github.remusselea.scentdb.dto.model.perfumer.PerfumerDto;
+import com.github.remusselea.scentdb.dto.request.CompanyModel;
+import com.github.remusselea.scentdb.dto.view.View.CompanyView;
 import com.github.remusselea.scentdb.service.CompanyService;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -44,12 +46,13 @@ public class CompanyController {
    * @return the saved company.
    */
   @PostMapping("/companies")
-  public CompanyDto savePerfumer(@RequestParam("image") MultipartFile imageFile,
+  @JsonView(value = CompanyView.class)
+  public CompanyDto saveCompany(@RequestParam("image") MultipartFile imageFile,
       @RequestParam("company") String company) {
     log.info("Saving a company");
-    CompanyDto companyDto = deserializeStringToCompanyDto(company);
+    CompanyModel companyModel = deserializeStringToCompanyModel(company);
 
-    return companyService.saveCompany(companyDto, imageFile);
+    return companyService.saveCompany(companyModel, imageFile);
   }
 
   /**
@@ -72,7 +75,6 @@ public class CompanyController {
   }
 
 
-
   private CompanyDto deserializeStringToCompanyDto(String company) {
     CompanyDto companyDto = null;
     try {
@@ -83,5 +85,15 @@ public class CompanyController {
     return companyDto;
   }
 
+
+  private CompanyModel deserializeStringToCompanyModel(String company) {
+    CompanyModel companyModel = null;
+    try {
+      companyModel = new ObjectMapper().readValue(company, CompanyModel.class);
+    } catch (JsonProcessingException e) {
+      log.error("Could not parse perfumer string, cause {0}", e);
+    }
+    return companyModel;
+  }
 
 }

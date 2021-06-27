@@ -48,14 +48,31 @@ public class Company {
   )
   private Set<Perfumer> perfumers;
 
+  @OneToMany(
+      mappedBy = "company",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true
+  )
+  private Set<Perfume> perfumes;
+
   public void addPerfumer(Perfumer perfumer) {
     perfumers.add(perfumer);
     perfumer.setCompany(this);
   }
 
-  public void removePerfume(Perfumer perfumer) {
+  public void removePerfumer(Perfumer perfumer) {
     perfumers.remove(perfumer);
     perfumer.setCompany(null);
+  }
+
+  public void addPerfume(Perfume perfume) {
+    perfumes.add(perfume);
+    perfume.setCompany(this);
+  }
+
+  public void removePerfume(Perfume perfume) {
+    perfumes.remove(perfume);
+    perfume.setCompany(null);
   }
 
 }

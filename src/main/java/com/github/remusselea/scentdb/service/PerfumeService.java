@@ -1,19 +1,28 @@
 package com.github.remusselea.scentdb.service;
 
+import static com.github.remusselea.scentdb.dto.mapper.PerfumeMapperCustomizer.getKey;
+
+import com.github.remusselea.scentdb.dto.mapper.CompanyMapper;
 import com.github.remusselea.scentdb.dto.mapper.NoteMapper;
 import com.github.remusselea.scentdb.dto.mapper.PerfumeImageMapper;
 import com.github.remusselea.scentdb.dto.mapper.PerfumeMapper;
+import com.github.remusselea.scentdb.dto.mapper.PerfumerMapper;
 import com.github.remusselea.scentdb.dto.model.note.NoteDto;
 import com.github.remusselea.scentdb.dto.model.perfume.PerfumeDto;
-import com.github.remusselea.scentdb.dto.model.perfume.PerfumeImageDto;
-import com.github.remusselea.scentdb.dto.request.PerfumeRequest;
+import com.github.remusselea.scentdb.dto.model.perfume.PerfumeNoteDto;
+import com.github.remusselea.scentdb.dto.request.PerfumeModel;
 import com.github.remusselea.scentdb.dto.response.PerfumeResponse;
 import com.github.remusselea.scentdb.exception.FileStorageException;
+import com.github.remusselea.scentdb.model.entity.Company;
 import com.github.remusselea.scentdb.model.entity.Note;
 import com.github.remusselea.scentdb.model.entity.Perfume;
 import com.github.remusselea.scentdb.model.entity.PerfumeImage;
 import com.github.remusselea.scentdb.model.entity.PerfumeNote;
+import com.github.remusselea.scentdb.model.entity.Perfumer;
+import com.github.remusselea.scentdb.repo.CompanyRepository;
+import com.github.remusselea.scentdb.repo.NoteRepository;
 import com.github.remusselea.scentdb.repo.PerfumeRepository;
+import com.github.remusselea.scentdb.repo.PerfumerRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,14 +47,30 @@ public class PerfumeService {
 
   private PerfumeRepository perfumeRepository;
 
+  private NoteRepository noteRepository;
+
+  private PerfumerRepository perfumerRepository;
+
+  private CompanyRepository companyRepository;
+
   private PerfumeMapper perfumeMapper;
 
   private NoteMapper noteMapper;
 
-  private PerfumeImageMapper perfumeImageMapper;
 
   @Value("${perfumes.images.dir:${user.home}}")
   public String uploadDir;
+
+
+  private static final Map<Character, String> NOTE_TYPES_NAMES = new HashMap<>();
+
+  static {
+    NOTE_TYPES_NAMES.put('t', "top notes");
+    NOTE_TYPES_NAMES.put('b', "base notes");
+    NOTE_TYPES_NAMES.put('m', "middle notes");
+    NOTE_TYPES_NAMES.put('g', "general notes");
+  }
+
 
   /**
    * All args constructor.
@@ -54,13 +79,18 @@ public class PerfumeService {
    * @param perfumeMapper     mapper that maps perfumes to dto.
    * @param noteMapper        mapper that maps notes to dto.
    */
+
   public PerfumeService(PerfumeRepository perfumeRepository,
-      PerfumeMapper perfumeMapper, NoteMapper noteMapper,
-      PerfumeImageMapper perfumeImageMapper) {
+      NoteRepository noteRepository,
+      PerfumerRepository perfumerRepository,
+      CompanyRepository companyRepository,
+      PerfumeMapper perfumeMapper, NoteMapper noteMapper) {
     this.perfumeRepository = perfumeRepository;
+    this.noteRepository = noteRepository;
+    this.perfumerRepository = perfumerRepository;
+    this.companyRepository = companyRepository;
     this.perfumeMapper = perfumeMapper;
     this.noteMapper = noteMapper;
-    this.perfumeImageMapper = perfumeImageMapper;
   }
 
   /**
@@ -100,11 +130,32 @@ public class PerfumeService {
   /**
    * Creates or updates a {@link Perfume} in the configured {@link PerfumeRepository}.
    *
-   * @param perfumeRequest the object containing the data of a perfume to be created or updated.
+   * @param perfumeModel the object containing the data of a perfume to be created or updated.
    * @return returns a {@link PerfumeResponse} containing the perfume saved in the database.
    */
-  public PerfumeResponse savePerfume(PerfumeRequest perfumeRequest, MultipartFile[] imageFiles) {
-    Perfume perfumeToSave = perfumeMapper.perfumeRequestToPerfume(perfumeRequest);
+  public PerfumeResponse savePerfume(PerfumeModel perfumeModel, MultipartFile[] imageFiles) {
+    Perfume perfumeToSave = perfumeMapper.perfumeModelToPerfume(perfumeModel);
+    List<PerfumeNoteDto> perfumeNoteDtoList = perfumeModel.getPerfumeNoteDtoList();
+
+    for (PerfumeNoteDto perfumeNoteDto : perfumeNoteDtoList) {
+      for (Long noteId : perfumeNoteDto.getNotes()) {
+        Optional<Note> optionalNote = noteRepository.findById(noteId);
+        if (optionalNote.isPresent()) {
+          String noteType = perfumeNoteDto.getNoteType();
+          Character character = getKey(NOTE_TYPES_NAMES, noteType);
+          // add the note and the type to the perfume
+          perfumeToSave.addNote(optionalNote.get(), character);
+        }
+      }
+    }
+
+    Long perfumerId = perfumeModel.getPerfumerId();
+    Optional<Perfumer> optionalPerfumer = perfumerRepository.findById(perfumerId);
+    optionalPerfumer.ifPresent(perfumeToSave::setPerfumer);
+
+    Long companyId = perfumeModel.getCompanyId();
+    Optional<Company> optionalCompany = companyRepository.findById(companyId);
+    optionalCompany.ifPresent(perfumeToSave::setCompany);
 
     for (MultipartFile multipartImageFile : imageFiles) {
       String imageFileName = storeImage(multipartImageFile);
@@ -151,14 +202,6 @@ public class PerfumeService {
   private void addInfoToPerfumeResponse(PerfumeResponse perfumeResponse, Perfume perfume) {
     // map perfume to perfumeDto
     PerfumeDto perfumeDto = perfumeMapper.perfumeToPerfumeDto(perfume);
-
-    List<PerfumeImageDto> perfumeImageDtoList = new ArrayList<>(perfume.getPerfumeImages().size());
-    for (PerfumeImage perfumeImage : perfume.getPerfumeImages()) {
-      PerfumeImageDto perfumeImageDto = perfumeImageMapper
-          .perfumeImageToPerfumeImageDto(perfumeImage);
-      perfumeImageDtoList.add(perfumeImageDto);
-    }
-    perfumeDto.setPerfumeImageDtoList(perfumeImageDtoList);
 
     // add each mapped perfumeDto into the perfumeDtoList of perfumeResponse
     perfumeResponse.getPerfumeDtoList().add(perfumeDto);

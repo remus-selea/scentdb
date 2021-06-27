@@ -12,6 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -54,18 +55,22 @@ public class Perfume implements Serializable {
   private Gender gender;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "perfumeType")
+  @Column(name = "perfume_type")
   private Type perfumeType;
 
-  @Column(name = "bottleSizes")
+  @Column(name = "bottle_sizes")
   private String bottleSizes;
 
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "perfumer_id")
   private Perfumer perfumer;
+
+  @ManyToOne
+  @JoinColumn(name = "company_id")
+  private Company company;
 
   @OneToMany(
       mappedBy = "perfume",
@@ -96,6 +101,7 @@ public class Perfume implements Serializable {
     PerfumeNote perfumeNote = new PerfumeNote(this, note, noteType);
     perfumeNotes.add(perfumeNote);
   }
+
 
   /**
    * Remove al {@link Note} from the Set of {@link PerfumeNote}.

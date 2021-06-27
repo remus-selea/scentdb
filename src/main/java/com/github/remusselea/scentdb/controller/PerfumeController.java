@@ -1,9 +1,12 @@
 package com.github.remusselea.scentdb.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.remusselea.scentdb.dto.request.PerfumeModel;
 import com.github.remusselea.scentdb.dto.request.PerfumeRequest;
 import com.github.remusselea.scentdb.dto.response.PerfumeResponse;
+import com.github.remusselea.scentdb.dto.view.View.PerfumeView;
 import com.github.remusselea.scentdb.service.PerfumeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -61,12 +64,13 @@ public class PerfumeController {
    * @return the saved perfume.
    */
   @PostMapping("/perfumes")
+  @JsonView(value = PerfumeView.class)
   public PerfumeResponse savePerfume(@RequestParam("image")  MultipartFile[] imageFiles,
       @RequestParam("perfume") String perfume) {
     log.info("Saving a perfume");
-    PerfumeRequest perfumeRequest = deserializeStringToPerfumeRequest(perfume);
+    PerfumeModel perfumeModel = deserializeStringToPerfumeModel(perfume);
 
-    return perfumeService.savePerfume(perfumeRequest, imageFiles);
+    return perfumeService.savePerfume(perfumeModel, imageFiles);
   }
 
 
@@ -78,11 +82,12 @@ public class PerfumeController {
    * @return the updated perfume.
    */
   @PutMapping("/perfumes/{perfumeId}")
+  @JsonView(value = PerfumeView.class)
   public PerfumeResponse updatePerfume(@RequestParam("image") MultipartFile[] imageFiles,
       @RequestParam("perfume") String perfume, @PathVariable Long perfumeId) {
-    PerfumeRequest perfumeRequest = deserializeStringToPerfumeRequest(perfume);
+    PerfumeModel perfumeModel = deserializeStringToPerfumeModel(perfume);
 
-    return perfumeService.savePerfume(perfumeRequest, imageFiles);
+    return perfumeService.savePerfume(perfumeModel, imageFiles);
   }
 
 
@@ -97,10 +102,19 @@ public class PerfumeController {
     try {
       perfumeRequest = new ObjectMapper().readValue(perfume, PerfumeRequest.class);
     } catch (JsonProcessingException e) {
-      log.error("Could not parse perfume string, cause {0}", e);
+      log.error("Could not deserialize the string to a PerfumeRequest, cause {0}", e);
     }
     return perfumeRequest;
   }
 
+  private PerfumeModel deserializeStringToPerfumeModel(String perfume) {
+    PerfumeModel perfumeModel = null;
+    try {
+      perfumeModel = new ObjectMapper().readValue(perfume, PerfumeModel.class);
+    } catch (JsonProcessingException e) {
+      log.error("Could not deserialize the string to a PerfumeModel, cause {0}", e);
+    }
+    return perfumeModel;
+  }
 
 }
