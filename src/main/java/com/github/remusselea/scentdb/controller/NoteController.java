@@ -2,11 +2,16 @@ package com.github.remusselea.scentdb.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.remusselea.scentdb.dto.model.note.NoteDto;
 import com.github.remusselea.scentdb.dto.request.NoteRequest;
 import com.github.remusselea.scentdb.dto.response.NoteResponse;
 import com.github.remusselea.scentdb.service.NoteService;
+import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +42,7 @@ public class NoteController {
    * @return a {@link NoteResponse} with all the existing notes.
    */
   @GetMapping("/notes")
-  public NoteResponse getAllNotes() {
+  public List<NoteDto> getAllNotes() {
     log.info("Getting all notes");
     return noteService.getAllNotes();
   }
@@ -91,6 +96,15 @@ public class NoteController {
   public void removeNote(@PathVariable Long noteId) {
 
     noteService.removeNoteById(noteId);
+  }
+
+
+  @GetMapping("/notes/search")
+  public Page searchNotes(@RequestParam(value = "q", required = false) String query,
+      @PageableDefault(size = 9) Pageable pageable) {
+    log.info("searching notes");
+
+    return noteService.search(pageable, query);
   }
 
   private NoteRequest deserializeStringToNoteRequest(String note) {

@@ -32,6 +32,7 @@ public class ElasticSearchConfig {
         .connectedTo(elasticsearchUri)
         .build();
 
+    log.debug("Connecting to elastic URI: " + elasticsearchUri);
     return RestClients.create(clientConfiguration).rest();
   }
 

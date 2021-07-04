@@ -10,6 +10,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 
 @Entity(name = "PerfumeImage")
 @Table(name = "perfume_images")
@@ -22,6 +23,7 @@ public class PerfumeImage {
   @GeneratedValue
   private Long id;
 
+  @GenericField
   @Column(name = "image_path")
   private String imagePath;
 
@@ -29,10 +31,10 @@ public class PerfumeImage {
   @JoinColumn(name = "perfume_id", nullable = false)
   private Perfume perfume;
 
-  /**
-   * The JPA specification requires that all persistent classes have a no-arg constructor.
-   */
   public PerfumeImage() {
+    /*
+     * The JPA specification requires that all persistent classes have a no-arg constructor.
+     */
   }
 
 }

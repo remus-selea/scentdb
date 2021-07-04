@@ -16,8 +16,6 @@ public class PerfumeModel {
 
   private String title;
 
-  private String brand;
-
   private String launchYear;
 
   private Gender gender;

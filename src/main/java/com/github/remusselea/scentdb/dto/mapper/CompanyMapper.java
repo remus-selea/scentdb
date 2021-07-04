@@ -11,7 +11,7 @@ import org.mapstruct.Named;
     PerfumeMapper.class})
 public interface CompanyMapper {
 
-  @Mapping(target = "companyId", source = "id")
+  @Mapping(target = "companyId", source = "companyId")
   @Mapping(target = "companyType", source = "type")
   @Mapping(target = "perfumerDtoList", source = "perfumers")
   @Mapping(target = "perfumeDtoList", source = "perfumes", qualifiedByName = "perfumeWithoutCompany")
@@ -19,17 +19,17 @@ public interface CompanyMapper {
 
 
   @Named("companyWithoutPerfumesAndPerfumers")
-  @Mapping(target = "companyId", source = "id")
+  @Mapping(target = "companyId", source = "companyId")
   @Mapping(target = "companyType", source = "type")
   @Mapping(target = "perfumerDtoList", ignore = true)
   @Mapping(target = "perfumeDtoList", ignore = true)
   CompanyDto companyToCompanyDtoWithoutPerfumesAndPerfumers(Company company);
 
-  @Mapping(target = "id", source = "companyId")
+  @Mapping(target = "companyId", source = "companyId")
   @Mapping(target = "type", source = "companyType")
   Company companyDtoToCompany(CompanyDto companyDto);
 
-  @Mapping(target = "id", source = "companyId")
+  @Mapping(target = "companyId", source = "companyId")
   @Mapping(target = "type", source = "companyType")
   Company companyModelToCompany(CompanyModel companyModel);
 

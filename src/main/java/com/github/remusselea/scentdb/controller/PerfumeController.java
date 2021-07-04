@@ -39,6 +39,7 @@ public class PerfumeController {
    * @return a perfume.
    */
   @GetMapping("/perfumes/{perfumeId}")
+  @JsonView(value = PerfumeView.class)
   public PerfumeResponse getPerfumeById(@PathVariable Long perfumeId) {
     log.info("Getting perfume by Id: {}", perfumeId);
 
@@ -51,6 +52,7 @@ public class PerfumeController {
    * @return all perfumes.
    */
   @GetMapping("/perfumes")
+  @JsonView(value = PerfumeView.class)
   public PerfumeResponse getAllPerfumes() {
     log.info("Getting all perfumes");
 

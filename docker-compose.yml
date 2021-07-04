@@ -37,11 +37,24 @@ services:
         source: ./docker/logstash/pipeline
         target: /usr/share/logstash/pipeline
         read_only: true
+      - type: bind
+        source: ./docker/logstash/drivers
+        target: /usr/share/logstash/drivers
+        read_only: true
     ports:
       - ${LOGSTASH_HOST_PORT}:${LOGSTASH_CONTAINER_PORT}/tcp
       - "5000:5000/udp"
       - "9600:9600"
     environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_HOST: ${POSTGRES_CONTAINER_NAME}
+      DATABASE_PORT: ${POSTGRES_CONTAINER_PORT}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_CONTAINER_NAME}
+      ELASTICSEARCH_PORT: ${ELASTICSEARCH_CONTAINER_PORT}
+      ELASTIC_USERNAME: ${ELASTIC_USERNAME}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
       - scentdb-network
@@ -114,15 +127,16 @@ services:
       - ${SCENTDB_HOST_PORT}:${SCENTDB_CONTAINER_PORT}
     networks:
       - scentdb-network
-    restart: on-failure
+#    restart: on-failure
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DATABASE_HOST: ${POSTGRES_CONTAINER_NAME}
       DATABASE_PORT: ${POSTGRES_CONTAINER_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
       LOGSTASH_ENABLED: ${LOGSTASH_ENABLED}
       LOGSTASH_HOST: ${LOGSTASH_CONTAINER_NAME}
       LOGSTASH_PORT: ${LOGSTASH_CONTAINER_PORT}
-      ELASTICSEARCH_HOST: ${ELASTICSEARCH_CONTAINER_NAME}
+      ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_PORT: ${ELASTICSEARCH_CONTAINER_PORT}
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}

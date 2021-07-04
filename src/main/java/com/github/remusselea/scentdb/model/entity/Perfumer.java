@@ -13,7 +13,14 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
+@Indexed(index = "scentdb-perfumers-index")
 @Entity(name = "Perfumer")
 @Table(name = "perfumers")
 @Getter
@@ -25,15 +32,19 @@ public class Perfumer {
   @GeneratedValue
   private long id;
 
+  @FullTextField(analyzer = "edge_ngram_analyzer", searchAnalyzer = "edge_ngram_search_analyzer")
   @Column(name = "name")
   private String name;
 
+  @FullTextField
   @Column(name = "details", columnDefinition = "TEXT")
   private String details;
 
+  @GenericField
   @Column(name = "image_Path")
   private String imagePath;
 
+  @IndexedEmbedded(includeDepth = 1)
   @OneToMany(
       mappedBy = "perfumer",
       cascade = CascadeType.ALL,
@@ -42,6 +53,7 @@ public class Perfumer {
   )
   private Set<Perfume> perfumes;
 
+  @IndexedEmbedded(includeDepth = 1)
   @ManyToOne
   @JoinColumn(name="company_id")
   private Company company;

@@ -33,6 +33,10 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    set('elasticsearch.version', '7.10.0')
+}
+
 dependencies {
     /** SPRING  **/
     implementation "org.springframework.boot:spring-boot-starter-actuator"
@@ -73,6 +77,10 @@ dependencies {
 
     /** # LOGBACK CONDITIONALS **/
     compile "org.codehaus.janino:janino:${janino}"
+
+    /** HIBERNATE SEARCH **/
+    implementation group: 'org.hibernate.search', name: 'hibernate-search-mapper-orm', version: '6.0.5.Final'
+    implementation group: 'org.hibernate.search', name: 'hibernate-search-backend-elasticsearch', version: '6.0.5.Final'
 
     /** TESTING  **/
     testImplementation("org.springframework.boot:spring-boot-starter-test") {

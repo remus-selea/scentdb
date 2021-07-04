@@ -13,32 +13,44 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
+@Indexed(index = "scentdb-companies-index")
 @Entity(name = "Company")
 @Table(name = "companies")
 @Getter
 @Setter
 public class Company {
 
+  @GenericField
   @Id
   @Column(name = "company_id")
   @GeneratedValue
-  private long id;
+  private Long companyId;
 
+  @FullTextField(analyzer = "edge_ngram_analyzer", searchAnalyzer = "edge_ngram_search_analyzer")
   @Column(name = "name")
   private String name;
 
+  @FullTextField
   @Column(name = "website")
   private String website;
 
+  @FullTextField
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
+  @KeywordField
   @Enumerated(EnumType.STRING)
   @Column(name = "type")
   private CompanyType type;
 
-  @Column(name = "imagePath")
+  @GenericField
+  @Column(name = "image_path")
   private String imagePath;
 
   @OneToMany(
@@ -48,6 +60,7 @@ public class Company {
   )
   private Set<Perfumer> perfumers;
 
+  @IndexedEmbedded(includeDepth = 1)
   @OneToMany(
       mappedBy = "company",
       cascade = CascadeType.ALL,

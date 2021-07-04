@@ -21,8 +21,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
-
+@Indexed(index = "scentdb-perfumes-index")
 @Entity(name = "Perfume")
 @Table(name = "perfumes")
 @Getter
@@ -34,6 +39,33 @@ public class Perfume implements Serializable {
   @GeneratedValue
   private Long perfumeId;
 
+  @FullTextField(analyzer = "edge_ngram_analyzer", searchAnalyzer = "edge_ngram_search_analyzer")
+  @Column(name = "title")
+  private String title;
+
+  @GenericField
+  @Column(name = "launch_year")
+  private Integer launchYear;
+
+  @KeywordField
+  @Enumerated(EnumType.STRING)
+  @Column(name = "gender")
+  private Gender gender;
+
+  @KeywordField
+  @Enumerated(EnumType.STRING)
+  @Column(name = "perfume_type")
+  private Type perfumeType;
+
+  @FullTextField
+  @Column(name = "bottle_sizes")
+  private String bottleSizes;
+
+  @FullTextField
+  @Column(name = "description", columnDefinition = "TEXT")
+  private String description;
+
+  @IndexedEmbedded
   @OneToMany(
       mappedBy = "perfume",
       cascade = CascadeType.ALL,
@@ -41,37 +73,17 @@ public class Perfume implements Serializable {
   )
   private Set<PerfumeNote> perfumeNotes = new HashSet<>();
 
-  @Column(name = "title")
-  private String title;
-
-  @Column(name = "brand")
-  private String brand;
-
-  @Column(name = "launch_year")
-  private int launchYear;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "gender")
-  private Gender gender;
-
-  @Enumerated(EnumType.STRING)
-  @Column(name = "perfume_type")
-  private Type perfumeType;
-
-  @Column(name = "bottle_sizes")
-  private String bottleSizes;
-
-  @Column(name = "description", columnDefinition = "TEXT")
-  private String description;
-
+  @IndexedEmbedded(includeDepth = 1)
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "perfumer_id")
   private Perfumer perfumer;
 
+  @IndexedEmbedded(includeDepth = 1, includePaths = "companyId")
   @ManyToOne
   @JoinColumn(name = "company_id")
   private Company company;
 
+  @IndexedEmbedded
   @OneToMany(
       mappedBy = "perfume",
       cascade = CascadeType.ALL,

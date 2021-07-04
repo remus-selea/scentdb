@@ -21,7 +21,7 @@ public interface PerfumeMapper {
   @Mapping(target = "perfumeImageDtoList", source = "perfumeImages")
   @Mapping(target = "perfumer", ignore = true)
   @Mapping(target = "company", ignore = true)
-  PerfumeDto perfumeToPerfumeDtoWithoutPerfumers(Perfume perfume);
+  PerfumeDto perfumeToPerfumeDtoWithoutPerfumersAndCompany(Perfume perfume);
 
   @Named("perfumeWithoutCompany")
   @Mapping(target = "perfumeImageDtoList", source = "perfumeImages")
@@ -30,17 +30,6 @@ public interface PerfumeMapper {
   @Mapping(target = "perfumer.perfumerId", source = "perfumer.id")
   @Mapping(target = "company", ignore = true)
   PerfumeDto perfumeToPerfumeDtoWithoutCompany(Perfume perfume);
-
-  @Mapping(target = "perfumeId", source = "perfumeDto.perfumeId")
-  @Mapping(target = "title", source = "perfumeDto.title")
-  @Mapping(target = "brand", source = "perfumeDto.brand")
-  @Mapping(target = "launchYear", source = "perfumeDto.launchYear")
-  @Mapping(target = "gender", source = "perfumeDto.gender")
-  @Mapping(target = "perfumeType", source = "perfumeDto.perfumeType")
-  @Mapping(target = "bottleSizes", source = "perfumeDto.bottleSizes")
-  @Mapping(target = "description", source = "perfumeDto.description")
-  @Mapping(target = "perfumeNotes", ignore = true)
-  Perfume perfumeRequestToPerfume(PerfumeRequest perfumeRequest);
 
   @Mapping(target = "perfumeId", source = "perfumeId")
   @Mapping(target = "title", source = "title")

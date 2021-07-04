@@ -1,9 +1,12 @@
 package com.github.remusselea.scentdb.service;
 
 
+import com.github.remusselea.scentdb.dto.Filter;
 import com.github.remusselea.scentdb.dto.mapper.PerfumerMapper;
+import com.github.remusselea.scentdb.dto.model.company.CompanyDto;
 import com.github.remusselea.scentdb.dto.model.perfumer.PerfumerDto;
 import com.github.remusselea.scentdb.dto.request.PerfumerModel;
+import com.github.remusselea.scentdb.dto.response.PerfumeResponse;
 import com.github.remusselea.scentdb.model.entity.Company;
 import com.github.remusselea.scentdb.model.entity.Perfume;
 import com.github.remusselea.scentdb.model.entity.Perfumer;
@@ -15,8 +18,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
+import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.engine.search.query.SearchResult;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.scope.SearchScope;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -33,6 +50,8 @@ public class PerfumerService {
 
   private PerfumerMapper perfumerMapper;
 
+  private EntityManager entityManager;
+
   private ImageService imageService;
 
   @Value("${perfumers.images.dir:${user.home}}")
@@ -41,11 +60,13 @@ public class PerfumerService {
   public PerfumerService(PerfumerRepository perfumerRepository,
       CompanyRepository companyRepository,
       PerfumeRepository perfumeRepository,
-      PerfumerMapper perfumerMapper, ImageService imageService) {
+      PerfumerMapper perfumerMapper, EntityManager entityManager,
+      ImageService imageService) {
     this.perfumerRepository = perfumerRepository;
     this.companyRepository = companyRepository;
     this.perfumeRepository = perfumeRepository;
     this.perfumerMapper = perfumerMapper;
+    this.entityManager = entityManager;
     this.imageService = imageService;
   }
 
@@ -93,6 +114,83 @@ public class PerfumerService {
     return perfumerDtoList;
   }
 
+
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  public Page<PerfumerDto> search(Pageable pageable, String query) {
+    Page<PerfumerDto> perfumerDtoPage;
+
+    if ((query == null || query.isBlank()) ) {
+      perfumerDtoPage = searchMatchAll(pageable);
+    } else {
+      perfumerDtoPage = searchTerms(pageable, query);
+    }
+
+    return perfumerDtoPage;
+  }
+
+
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  public Page<PerfumerDto> searchMatchAll(Pageable pageable) {
+    SearchSession searchSession = Search.session(entityManager);
+
+    ElasticsearchSearchQuery<Perfumer> searchQuery = searchSession.search(Perfumer.class)
+        .extension(ElasticsearchExtension.get())
+        .where(SearchPredicateFactory::matchAll).toQuery();
+
+    SearchResult<Perfumer> result = searchQuery
+        .fetch((int) pageable.getOffset(), pageable.getPageSize());
+
+    List<Perfumer> perfumerList = result.hits();
+    List<PerfumerDto> perfumerDtoList = new ArrayList<>(perfumerList.size());
+
+    for (Perfumer perfumer : perfumerList) {
+      PerfumerDto perfumerDto = perfumerMapper.perfumerToPerfumerDto(perfumer);
+      perfumerDtoList.add(perfumerDto);
+    }
+
+    return new PageImpl<>(perfumerDtoList, pageable, result.total().hitCount());
+  }
+
+  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  public Page<PerfumerDto> searchTerms(Pageable pageable, String query) {
+    SearchSession searchSession = Search.session(entityManager);
+
+    SearchScope<Perfumer> scope = searchSession.scope(Perfumer.class);
+
+    SearchPredicate boolPredicates = formSearchPredicates(query, scope);
+
+    SearchResult<Perfumer> result = searchSession.search(scope).where(boolPredicates)
+        .fetch((int) pageable.getOffset(), pageable.getPageSize());
+
+    List<Perfumer> perfumerList = result.hits();
+    List<PerfumerDto> perfumerDtoList = new ArrayList<>(perfumerList.size());
+
+    for (Perfumer perfumer : perfumerList) {
+      PerfumerDto perfumerDto = perfumerMapper.perfumerToPerfumerDto(perfumer);
+      perfumerDtoList.add(perfumerDto);
+    }
+
+    return new PageImpl<>(perfumerDtoList, pageable, result.total().hitCount());
+  }
+
+  private SearchPredicate formSearchPredicates(String query, SearchScope<Perfumer> searchScope) {
+    SearchPredicateFactory factory = searchScope.predicate();
+
+    BooleanPredicateClausesStep<?> booleanJunction = factory.bool();
+    prepareNamePredicate(booleanJunction, factory, query);
+    SearchPredicate boolPredicate = booleanJunction.toPredicate();
+
+    return boolPredicate;
+  }
+
+
+  private void prepareNamePredicate(BooleanPredicateClausesStep<?> booleanJunction,
+      SearchPredicateFactory factory, String query) {
+    if (StringUtils.isBlank(query)) {
+      return;
+    }
+    booleanJunction.must(factory.match().field("name").matching(query).fuzzy(2).toPredicate());
+  }
 
   public void removePerfumerById(Long perfumerId) {
     perfumerRepository.deleteById(perfumerId);

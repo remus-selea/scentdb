@@ -26,9 +26,6 @@ public class PerfumeDto {
   private List<PerfumeNoteDto> perfumeNoteDtoList;
 
   @JsonView(View.Basic.class)
-  private String brand;
-
-  @JsonView(View.Basic.class)
   private String launchYear;
 
   @JsonView(View.Basic.class)

@@ -1,14 +1,15 @@
 package com.github.remusselea.scentdb.controller;
 
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.github.remusselea.scentdb.dto.Filter;
-import com.github.remusselea.scentdb.service.PerfumeSearchService;
+import com.github.remusselea.scentdb.dto.view.View.PerfumeView;
+import com.github.remusselea.scentdb.service.SearchService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -23,20 +24,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/scentdb/v1")
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class SearchController {
-  private PerfumeSearchService perfumeSearchService;
 
 
-  @Autowired
-  public SearchController(PerfumeSearchService perfumeSearchService) {
-    this.perfumeSearchService = perfumeSearchService;
+  private SearchService searchService;
+
+  public SearchController(SearchService searchService) {
+    this.searchService = searchService;
   }
 
   @GetMapping("/perfumes/search")
-  public Page searchObjects(@RequestParam(value = "q", required = false) String query,
-      @RequestParam(value = "filter", required = false) String filter,
-      @PageableDefault(value = 1, page = 0) Pageable pageable) {
+  @JsonView(value = PerfumeView.class)
+  public Page searchPerfumes(@RequestParam(value = "q", required = false) String query,
+      @RequestParam(value = "genderFilter", required = false) String genderFilter,
+      @RequestParam(value = "yearFilter", required = false) String yearFilter,
+      @RequestParam(value = "perfumeTypeFilter", required = false) String perfumeTypeFilter,
+      @RequestParam(value = "companyFilter", required = false) String companyFilter,
+      @PageableDefault(size = 9) Pageable pageable) {
     log.info("searching perfumes");
-    return this.perfumeSearchService.search(query, this.map(filter), pageable);
+
+    List<Filter> filterList = map(genderFilter);
+    List<Filter> yearFilterList = map(yearFilter);
+    List<Filter> perfumeTypeFilterList = map(perfumeTypeFilter);
+    List<Filter> companyFilterList = map(companyFilter);
+
+    return searchService.search(pageable, query, filterList, yearFilterList, perfumeTypeFilterList, companyFilterList);
   }
 
   private List<Filter> map(String filters) {
@@ -64,6 +75,11 @@ public class SearchController {
     if (!filter.contains(":")) {
       return filters;
     }
+
+    if (filter.startsWith(",")) {
+      filter = filter.replaceFirst(",", "");
+    }
+
     final String[] values = filter.split(":");
     if (values[1].contains(",")) {
       for (String f : values[1].split(",")) {

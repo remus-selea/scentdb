@@ -11,6 +11,10 @@ import lombok.Setter;
 public class NoteDto {
 
   @JsonView(View.Basic.class)
+  @JsonProperty("noteId")
+  private Long noteId;
+
+  @JsonView(View.Basic.class)
   @JsonProperty("name")
   private String noteName;
 

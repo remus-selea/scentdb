@@ -12,6 +12,10 @@ import javax.persistence.MapsId;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.mapper.pojo.automaticindexing.ReindexOnUpdate;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexingDependency;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 @Entity(name = "PerfumeNote")
 @Table(name = "perfume_notes")
@@ -27,10 +31,13 @@ public class PerfumeNote implements Serializable {
   @JsonIgnore
   private Perfume perfume;
 
+  @IndexingDependency(reindexOnUpdate = ReindexOnUpdate.SHALLOW)
+  @IndexedEmbedded
   @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("noteId")
   private Note note;
 
+  @KeywordField
   @Column(name = "notes_type")
   private char noteType;
 

@@ -9,6 +9,9 @@ import com.github.remusselea.scentdb.dto.view.View.CompanyView;
 import com.github.remusselea.scentdb.service.CompanyService;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +35,7 @@ public class CompanyController {
   }
 
   @GetMapping("/companies/{companyId}")
+  @JsonView(value = CompanyView.class)
   public CompanyDto getCompanyById(@PathVariable Long companyId) {
     log.info("Getting company by id: {}", companyId);
 
@@ -61,6 +65,7 @@ public class CompanyController {
    * @return all companies.
    */
   @GetMapping("/companies")
+  @JsonView(value = CompanyView.class)
   public List<CompanyDto> getAllCompanies() {
     log.info("Getting all companies");
 
@@ -72,6 +77,14 @@ public class CompanyController {
   public void removePerfume(@PathVariable Long companyId) {
 
     companyService.removeCompanyById(companyId);
+  }
+
+  @GetMapping("/companies/search")
+  @JsonView(value = CompanyView.class)
+  public Page searchCompanies(@RequestParam(value = "q", required = false) String query,
+      @PageableDefault(size = 9) Pageable pageable) {
+    log.info("searching companies");
+    return companyService.search(pageable, query);
   }
 
 

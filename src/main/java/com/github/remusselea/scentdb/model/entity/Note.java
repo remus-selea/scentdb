@@ -5,38 +5,43 @@ import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
+@Indexed(index = "scentdb-notes-index")
 @Entity(name = "Note")
 @Table(name = "notes")
-
 @Getter
 @Setter
 public class Note implements Serializable {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue
   @Column(name = "note_id")
   private long noteId;
 
+  @FullTextField(analyzer = "edge_ngram_analyzer", searchAnalyzer = "edge_ngram_search_analyzer")
   @Column(name = "note_name", unique = true)
   private String noteName;
 
+  @KeywordField
   @Column(name = "img_path")
   private String imgPath;
 
+  @FullTextField
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
-  /**
-   * The JPA specification requires that all persistent classes have a no-arg constructor.
-   */
+
   public Note() {
-    // The JPA specification requires that all persistent classes have a no-arg constructor.
+    /*
+     * The JPA specification requires that all persistent classes have a no-arg constructor.
+     */
   }
 
   @Override

@@ -9,6 +9,9 @@ import com.github.remusselea.scentdb.dto.view.View.PerfumerView;
 import com.github.remusselea.scentdb.service.PerfumerService;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +47,7 @@ public class PerfumerController {
    * @return all perfumers.
    */
   @GetMapping("/perfumers")
+  @JsonView(value = PerfumerView.class)
   public List<PerfumerDto> getAllPerfumes() {
     log.info("Getting all perfumers");
 
@@ -71,6 +75,16 @@ public class PerfumerController {
 
     perfumerService.removePerfumerById(perfumerId);
   }
+
+  @JsonView(value = PerfumerView.class)
+  @GetMapping("/perfumers/search")
+  public Page searchPerfumers(@RequestParam(value = "q", required = false) String query,
+      @PageableDefault(size = 9) Pageable pageable) {
+    log.info("searching perfumers");
+
+    return perfumerService.search(pageable, query);
+  }
+
 
 
   private PerfumerModel deserializeStringToPerfumerModel(String perfumer) {
