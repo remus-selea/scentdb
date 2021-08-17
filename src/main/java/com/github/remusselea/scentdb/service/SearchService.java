@@ -145,7 +145,7 @@ public class SearchService {
 
   private void prepareYearFilterPredicate(BooleanPredicateClausesStep<?> booleanJunction,
       SearchPredicateFactory factory, List<Filter> yearFilterList) {
-    if (yearFilterList == null && yearFilterList.size() != 2) {
+    if (yearFilterList == null || yearFilterList.size() != 2) {
       return;
     }
 
