@@ -107,15 +107,22 @@ public class SearchService {
 
     for (Order sortOrder: sortOrderList) {
       String fieldToSortBy = sortOrder.getProperty();
-      SortOrder order = SortOrder.DESC;
 
-      if(sortOrder.isAscending()){
-        order = SortOrder.ASC;
+      if(fieldToSortBy.equals("bestMatch")) {
+        compositeSortComponentsStep.add(searchSortFactory.score());
+      } else{
+        SortOrder order = SortOrder.DESC;
+
+        if(sortOrder.isAscending()){
+          order = SortOrder.ASC;
+        }
+
+        FieldSortOptionsStep<?, ? extends SearchPredicateFactory> fieldSortOptionsStep = searchSortFactory.field(fieldToSortBy).order(order);
+        compositeSortComponentsStep.add(fieldSortOptionsStep.toSort());
       }
 
-      FieldSortOptionsStep<?, ? extends SearchPredicateFactory> fieldSortOptionsStep = searchSortFactory.field(fieldToSortBy).order(order);
-      compositeSortComponentsStep.add(fieldSortOptionsStep.toSort());
     }
+
     return compositeSortComponentsStep.toSort();
   }
 
