@@ -27,6 +27,11 @@ import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.engine.search.query.SearchResult;
+import org.hibernate.search.engine.search.sort.SearchSort;
+import org.hibernate.search.engine.search.sort.dsl.CompositeSortComponentsStep;
+import org.hibernate.search.engine.search.sort.dsl.FieldSortOptionsStep;
+import org.hibernate.search.engine.search.sort.dsl.SearchSortFactory;
+import org.hibernate.search.engine.search.sort.dsl.SortOrder;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.session.SearchSession;
@@ -34,6 +39,7 @@ import org.hibernate.search.util.common.data.RangeBoundInclusion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,7 +65,7 @@ public class SearchService {
       List<Filter> yearFilterList, List<Filter> perfumeTypeFilterList, List<Filter> companyFilterList) {
     Page<PerfumeResponse> perfumeResponsePage;
 
-    if ((query == null || query.isBlank()) && genderFilterList.isEmpty() && yearFilterList.isEmpty()) {
+    if ((query == null || query.isBlank()) && genderFilterList.isEmpty() && companyFilterList.isEmpty() && perfumeTypeFilterList.isEmpty()) {
       perfumeResponsePage = searchMatchAll(pageable, query);
     } else {
       perfumeResponsePage = searchTerms(pageable, query, genderFilterList, yearFilterList, perfumeTypeFilterList, companyFilterList);
@@ -74,13 +80,15 @@ public class SearchService {
       List<Filter> genderFilter, List<Filter> yearFilterList, List<Filter> perfumeTypeFilterList, List<Filter> companyFilterList) {
 
     SearchSession searchSession = Search.session(entityManager);
-
     SearchScope<Perfume> scope = searchSession.scope(Perfume.class);
 
     SearchPredicate boolPredicates = formSearchPredicates(query, scope, genderFilter,
         yearFilterList, perfumeTypeFilterList, companyFilterList);
+    SearchSort searchSort = getSearchSort(pageable, scope);
 
-    SearchResult<Perfume> result = searchSession.search(scope).where(boolPredicates)
+    SearchResult<Perfume> result = searchSession.search(scope)
+        .where(boolPredicates)
+        .sort(searchSort)
         .fetch((int) pageable.getOffset(), pageable.getPageSize());
 
     List<Perfume> perfumeList = result.hits();
@@ -91,14 +99,37 @@ public class SearchService {
         result.total().hitCount());
   }
 
+  private SearchSort getSearchSort(Pageable pageable,
+      SearchScope<Perfume> scope) {
+    List<Order> sortOrderList = pageable.getSort().stream().collect(Collectors.toList());
+    SearchSortFactory searchSortFactory = scope.sort();
+    CompositeSortComponentsStep<?> compositeSortComponentsStep  = searchSortFactory.composite();
+
+    for (Order sortOrder: sortOrderList) {
+      String fieldToSortBy = sortOrder.getProperty();
+      SortOrder order = SortOrder.DESC;
+
+      if(sortOrder.isAscending()){
+        order = SortOrder.ASC;
+      }
+
+      FieldSortOptionsStep<?, ? extends SearchPredicateFactory> fieldSortOptionsStep = searchSortFactory.field(fieldToSortBy).order(order);
+      compositeSortComponentsStep.add(fieldSortOptionsStep.toSort());
+    }
+    return compositeSortComponentsStep.toSort();
+  }
 
   @Transactional(readOnly = true)
   public Page<PerfumeResponse> searchMatchAll(Pageable pageable, String query) {
     SearchSession searchSession = Search.session(entityManager);
+    SearchScope<Perfume> scope = searchSession.scope(Perfume.class);
+    SearchSort searchSort = getSearchSort(pageable, scope);
 
     ElasticsearchSearchQuery<Perfume> searchQuery = searchSession.search(Perfume.class)
         .extension(ElasticsearchExtension.get())
-        .where(SearchPredicateFactory::matchAll).toQuery();
+        .where(SearchPredicateFactory::matchAll)
+        .sort(searchSort)
+        .toQuery();
 
     SearchResult<Perfume> result = searchQuery
         .fetch((int) pageable.getOffset(), pageable.getPageSize());
@@ -123,9 +154,7 @@ public class SearchService {
     preparePerfumeTypeFilterPredicate(booleanJunction, factory, perfumeTypeFilterList);
     prepareCompanyFilterPredicate(booleanJunction, factory, companyFilterList);
 
-    SearchPredicate boolPredicate = booleanJunction.toPredicate();
-
-    return boolPredicate;
+    return booleanJunction.toPredicate();
   }
 
   private void prepareGenderFilterPredicate(BooleanPredicateClausesStep<?> booleanJunction,

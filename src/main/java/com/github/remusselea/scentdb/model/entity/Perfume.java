@@ -21,6 +21,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
@@ -40,10 +41,11 @@ public class Perfume implements Serializable {
   private Long perfumeId;
 
   @FullTextField(analyzer = "edge_ngram_analyzer", searchAnalyzer = "edge_ngram_search_analyzer")
+  @KeywordField(name ="titleKeyword", sortable = Sortable.YES)
   @Column(name = "title")
   private String title;
 
-  @GenericField
+  @GenericField(sortable = Sortable.YES)
   @Column(name = "launch_year")
   private Integer launchYear;
 
