@@ -23,6 +23,7 @@ services:
     healthcheck:
       interval: 20s
       retries: 10
+      # depends on elasticsearch port being 9200
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     networks:
       - scentdb-network
@@ -153,6 +154,13 @@ services:
       ELASTICSEARCH_PORT: ${ELASTICSEARCH_CONTAINER_PORT}
       ELASTIC_USERNAME: ${ELASTIC_USERNAME}
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      FACEBOOK_CLIENT_ID: ${FACEBOOK_CLIENT_ID}
+      FACEBOOK_CLIENT_SECRET: ${FACEBOOK_CLIENT_SECRET}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       IMAGES_PATH: /app/images
     depends_on:
       elasticsearch:

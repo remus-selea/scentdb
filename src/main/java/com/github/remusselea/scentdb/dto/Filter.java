@@ -1,14 +1,21 @@
 package com.github.remusselea.scentdb.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@Setter
 public class Filter {
+
   private String key;
   private Object value;
+
+  public Filter() {
+  }
+
+  public Filter(String key, Object value) {
+    this.key = key;
+    this.value = value;
+  }
 }

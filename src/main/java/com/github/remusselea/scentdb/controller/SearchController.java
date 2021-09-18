@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/scentdb/v1")
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class SearchController {
 
 

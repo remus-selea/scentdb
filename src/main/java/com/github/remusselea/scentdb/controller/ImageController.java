@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/scentdb/v1")
 @Slf4j
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class ImageController {
 
   private ImageService imageService;

@@ -26,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 @RestController
 @RequestMapping("/scentdb/v1")
-@CrossOrigin(origins = "http://localhost:3000")
 public class NoteController {
 
   private NoteService noteService;

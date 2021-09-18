@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,10 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/scentdb/v1")
 @Slf4j
-@CrossOrigin(origins = "http://localhost:3000")
 public class PerfumerController {
 
-  private PerfumerService perfumerService;
+
+  private final PerfumerService perfumerService;
 
   public PerfumerController(PerfumerService perfumerService) {
     this.perfumerService = perfumerService;
@@ -78,13 +77,12 @@ public class PerfumerController {
 
   @JsonView(value = PerfumerView.class)
   @GetMapping("/perfumers/search")
-  public Page searchPerfumers(@RequestParam(value = "q", required = false) String query,
+  public Page<PerfumerDto> searchPerfumers(@RequestParam(value = "q", required = false) String query,
       @PageableDefault(size = 9) Pageable pageable) {
     log.info("searching perfumers");
 
     return perfumerService.search(pageable, query);
   }
-
 
 
   private PerfumerModel deserializeStringToPerfumerModel(String perfumer) {

@@ -23,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/scentdb/v1")
 @Slf4j
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class PerfumeController {
 
   private final PerfumeService perfumeService;
