@@ -1,16 +1,12 @@
 package com.github.remusselea.scentdb.service;
 
 import com.github.remusselea.scentdb.dto.mapper.NoteMapper;
-import com.github.remusselea.scentdb.dto.model.company.CompanyDto;
 import com.github.remusselea.scentdb.dto.model.note.NoteDto;
-import com.github.remusselea.scentdb.dto.model.perfumer.PerfumerDto;
 import com.github.remusselea.scentdb.dto.request.NoteRequest;
 import com.github.remusselea.scentdb.dto.response.NoteResponse;
 import com.github.remusselea.scentdb.exception.FileStorageException;
 import com.github.remusselea.scentdb.exception.ScentdbBusinessUncheckedException;
-import com.github.remusselea.scentdb.model.entity.Company;
 import com.github.remusselea.scentdb.model.entity.Note;
-import com.github.remusselea.scentdb.model.entity.Perfumer;
 import com.github.remusselea.scentdb.repo.NoteRepository;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,8 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
@@ -32,6 +29,11 @@ import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.engine.search.query.SearchResult;
+import org.hibernate.search.engine.search.sort.SearchSort;
+import org.hibernate.search.engine.search.sort.dsl.CompositeSortComponentsStep;
+import org.hibernate.search.engine.search.sort.dsl.FieldSortOptionsStep;
+import org.hibernate.search.engine.search.sort.dsl.SearchSortFactory;
+import org.hibernate.search.engine.search.sort.dsl.SortOrder;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.session.SearchSession;
@@ -39,7 +41,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -48,14 +52,14 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @Slf4j
 public class NoteService {
 
-  private NoteRepository noteRepository;
+  private final NoteRepository noteRepository;
 
-  private NoteMapper noteMapper;
+  private final NoteMapper noteMapper;
+
+  private final EntityManager entityManager;
 
   @Value("${notes.images.dir:${user.home}}")
   public String uploadDir;
-
-  private EntityManager entityManager;
 
 
   public NoteService(NoteRepository noteRepository,
@@ -90,6 +94,7 @@ public class NoteService {
    * @param noteId the identifier of the note.
    * @return a {@link NoteResponse} with the found note.
    */
+  @Transactional(readOnly = true)
   public NoteResponse getNoteById(Long noteId) {
     log.debug("Getting note from the database by Id {}", noteId);
     Optional<Note> noteOptional = noteRepository.findById(noteId);
@@ -100,6 +105,7 @@ public class NoteService {
       NoteDto noteDto = noteMapper.noteToNoteDto(note);
       noteDtoMap.put(note.getNoteId(), noteDto);
     }
+
     NoteResponse noteResponse = new NoteResponse();
     noteResponse.setNoteDtoMap(noteDtoMap);
 
@@ -112,6 +118,7 @@ public class NoteService {
    * @param noteRequest the object containing the data of a note to be created or updated.
    * @return returns a NoteResponse containing the note saved in the database.
    */
+  @Transactional
   public NoteResponse saveNote(NoteRequest noteRequest,
       MultipartFile file) {
     boolean noteExists = noteRepository.existsNoteByNoteName(noteRequest.getNoteName());
@@ -137,11 +144,11 @@ public class NoteService {
     return createSavedNoteResponse(savedNote);
   }
 
-  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  @Transactional(readOnly = true)
   public Page<NoteDto> search(Pageable pageable, String query) {
     Page<NoteDto> noteDtoPage;
 
-    if ((query == null || query.isBlank()) ) {
+    if ((query == null || query.isBlank())) {
       noteDtoPage = searchMatchAll(pageable);
     } else {
       noteDtoPage = searchTerms(pageable, query);
@@ -150,17 +157,44 @@ public class NoteService {
     return noteDtoPage;
   }
 
-  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  @Transactional(readOnly = true)
   public Page<NoteDto> searchMatchAll(Pageable pageable) {
     SearchSession searchSession = Search.session(entityManager);
+    SearchScope<Note> scope = searchSession.scope(Note.class);
+    SearchSort searchSort = getSearchSort(pageable, scope);
 
     ElasticsearchSearchQuery<Note> searchQuery = searchSession.search(Note.class)
         .extension(ElasticsearchExtension.get())
-        .where(SearchPredicateFactory::matchAll).toQuery();
+        .where(SearchPredicateFactory::matchAll)
+        .sort(searchSort)
+        .toQuery();
 
     SearchResult<Note> result = searchQuery
         .fetch((int) pageable.getOffset(), pageable.getPageSize());
 
+    return getNoteDtoPage(pageable, result);
+  }
+
+
+  @Transactional(readOnly = true)
+  public Page<NoteDto> searchTerms(Pageable pageable, String query) {
+    SearchSession searchSession = Search.session(entityManager);
+    SearchScope<Note> scope = searchSession.scope(Note.class);
+
+    SearchPredicate boolPredicates = formSearchPredicates(query, scope);
+    SearchSort searchSort = getSearchSort(pageable, scope);
+
+    SearchResult<Note> result = searchSession
+        .search(scope)
+        .where(boolPredicates)
+        .sort(searchSort)
+        .fetch((int) pageable.getOffset(), pageable.getPageSize());
+
+    return getNoteDtoPage(pageable, result);
+  }
+
+  @NotNull
+  private Page<NoteDto> getNoteDtoPage(Pageable pageable, SearchResult<Note> result) {
     List<Note> noteList = result.hits();
     List<NoteDto> noteDtoList = new ArrayList<>(noteList.size());
 
@@ -172,27 +206,30 @@ public class NoteService {
     return new PageImpl<>(noteDtoList, pageable, result.total().hitCount());
   }
 
+  private SearchSort getSearchSort(Pageable pageable, SearchScope<Note> scope) {
+    List<Order> sortOrderList = pageable.getSort().stream().collect(Collectors.toList());
+    SearchSortFactory searchSortFactory = scope.sort();
+    CompositeSortComponentsStep<?> compositeSortComponentsStep = searchSortFactory.composite();
 
-  @org.springframework.transaction.annotation.Transactional(readOnly = true)
-  public Page<NoteDto> searchTerms(Pageable pageable, String query) {
-    SearchSession searchSession = Search.session(entityManager);
+    for (Order sortOrder : sortOrderList) {
+      String fieldToSortBy = sortOrder.getProperty();
 
-    SearchScope<Note> scope = searchSession.scope(Note.class);
+      if (fieldToSortBy.equals("bestMatch")) {
+        compositeSortComponentsStep.add(searchSortFactory.score());
+      } else {
+        SortOrder order = SortOrder.DESC;
 
-    SearchPredicate boolPredicates = formSearchPredicates(query, scope);
+        if (sortOrder.isAscending()) {
+          order = SortOrder.ASC;
+        }
 
-    SearchResult<Note> result = searchSession.search(scope).where(boolPredicates)
-        .fetch((int) pageable.getOffset(), pageable.getPageSize());
-
-    List<Note> noteList = result.hits();
-    List<NoteDto> noteDtoList = new ArrayList<>(noteList.size());
-
-    for (Note note : noteList) {
-      NoteDto noteDto = noteMapper.noteToNoteDto(note);
-      noteDtoList.add(noteDto);
+        FieldSortOptionsStep<?, ? extends SearchPredicateFactory> fieldSortOptionsStep = searchSortFactory.field(
+            fieldToSortBy).order(order);
+        compositeSortComponentsStep.add(fieldSortOptionsStep.toSort());
+      }
     }
 
-    return new PageImpl<>(noteDtoList, pageable, result.total().hitCount());
+    return compositeSortComponentsStep.toSort();
   }
 
   private SearchPredicate formSearchPredicates(String query, SearchScope<Note> searchScope) {
@@ -200,9 +237,8 @@ public class NoteService {
 
     BooleanPredicateClausesStep<?> booleanJunction = factory.bool();
     prepareNamePredicate(booleanJunction, factory, query);
-    SearchPredicate boolPredicate = booleanJunction.toPredicate();
 
-    return boolPredicate;
+    return booleanJunction.toPredicate();
   }
 
   private void prepareNamePredicate(BooleanPredicateClausesStep<?> booleanJunction,

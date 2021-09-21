@@ -1,10 +1,8 @@
 package com.github.remusselea.scentdb.service;
 
-import com.github.remusselea.scentdb.dto.Filter;
 import com.github.remusselea.scentdb.dto.mapper.CompanyMapper;
 import com.github.remusselea.scentdb.dto.model.company.CompanyDto;
 import com.github.remusselea.scentdb.dto.request.CompanyModel;
-import com.github.remusselea.scentdb.dto.response.PerfumeResponse;
 import com.github.remusselea.scentdb.model.entity.Company;
 import com.github.remusselea.scentdb.model.entity.Perfume;
 import com.github.remusselea.scentdb.model.entity.Perfumer;
@@ -12,14 +10,14 @@ import com.github.remusselea.scentdb.repo.CompanyRepository;
 import com.github.remusselea.scentdb.repo.PerfumeRepository;
 import com.github.remusselea.scentdb.repo.PerfumerRepository;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
@@ -27,6 +25,11 @@ import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.engine.search.query.SearchResult;
+import org.hibernate.search.engine.search.sort.SearchSort;
+import org.hibernate.search.engine.search.sort.dsl.CompositeSortComponentsStep;
+import org.hibernate.search.engine.search.sort.dsl.FieldSortOptionsStep;
+import org.hibernate.search.engine.search.sort.dsl.SearchSortFactory;
+import org.hibernate.search.engine.search.sort.dsl.SortOrder;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.session.SearchSession;
@@ -34,25 +37,26 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-@Transactional
 @Service
 public class CompanyService {
 
-  private PerfumerRepository perfumerRepository;
+  private final PerfumerRepository perfumerRepository;
 
-  private CompanyRepository companyRepository;
+  private final CompanyRepository companyRepository;
 
-  private PerfumeRepository perfumeRepository;
+  private final PerfumeRepository perfumeRepository;
 
-  private CompanyMapper companyMapper;
+  private final CompanyMapper companyMapper;
 
-  private ImageService imageService;
+  private final ImageService imageService;
 
-  private EntityManager entityManager;
+  private final EntityManager entityManager;
 
   @Value("${companies.images.dir:${user.home}}")
   public String uploadDir;
@@ -60,7 +64,8 @@ public class CompanyService {
   public CompanyService(PerfumerRepository perfumerRepository,
       CompanyRepository companyRepository,
       PerfumeRepository perfumeRepository,
-      CompanyMapper companyMapper, ImageService imageService,
+      CompanyMapper companyMapper,
+      ImageService imageService,
       EntityManager entityManager) {
     this.perfumerRepository = perfumerRepository;
     this.companyRepository = companyRepository;
@@ -70,6 +75,7 @@ public class CompanyService {
     this.entityManager = entityManager;
   }
 
+  @Transactional(readOnly = true)
   public CompanyDto getCompanyById(long companyId) {
     Company company = companyRepository.findById(companyId).orElseThrow(
         () -> new EntityNotFoundException("Could not find company with id: " + companyId));
@@ -77,6 +83,7 @@ public class CompanyService {
     return companyMapper.companyToCompanyDto(company);
   }
 
+  @Transactional
   public CompanyDto saveCompany(CompanyModel companyModel, MultipartFile multipartImageFile) {
     Company companyToSave = companyMapper.companyModelToCompany(companyModel);
 
@@ -119,7 +126,6 @@ public class CompanyService {
     return companyDtoList;
   }
 
-  @org.springframework.transaction.annotation.Transactional(readOnly = true)
   public Page<CompanyDto> search(Pageable pageable, String query) {
     Page<CompanyDto> companyDtoPage;
 
@@ -133,17 +139,42 @@ public class CompanyService {
   }
 
 
-  @org.springframework.transaction.annotation.Transactional(readOnly = true)
+  @Transactional(readOnly = true)
   public Page<CompanyDto> searchMatchAll(Pageable pageable) {
     SearchSession searchSession = Search.session(entityManager);
+    SearchScope<Company> scope = searchSession.scope(Company.class);
+    SearchSort searchSort = getSearchSort(pageable, scope);
 
     ElasticsearchSearchQuery<Company> searchQuery = searchSession.search(Company.class)
         .extension(ElasticsearchExtension.get())
-        .where(SearchPredicateFactory::matchAll).toQuery();
+        .where(SearchPredicateFactory::matchAll)
+        .sort(searchSort)
+        .toQuery();
 
     SearchResult<Company> result = searchQuery
         .fetch((int) pageable.getOffset(), pageable.getPageSize());
 
+    return getCompanyPage(pageable, result);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<CompanyDto> searchTerms(Pageable pageable, String query) {
+    SearchSession searchSession = Search.session(entityManager);
+    SearchScope<Company> scope = searchSession.scope(Company.class);
+
+    SearchPredicate boolPredicates = formSearchPredicates(query, scope);
+    SearchSort searchSort = getSearchSort(pageable, scope);
+
+    SearchResult<Company> result = searchSession.search(scope)
+        .where(boolPredicates)
+        .sort(searchSort)
+        .fetch((int) pageable.getOffset(), pageable.getPageSize());
+
+    return getCompanyPage(pageable, result);
+  }
+
+  @NotNull
+  private Page<CompanyDto> getCompanyPage(Pageable pageable, SearchResult<Company> result) {
     List<Company> companyList = result.hits();
     List<CompanyDto> companyDtoList = new ArrayList<>(companyList.size());
 
@@ -155,26 +186,30 @@ public class CompanyService {
     return new PageImpl<>(companyDtoList, pageable, result.total().hitCount());
   }
 
-  @org.springframework.transaction.annotation.Transactional(readOnly = true)
-  public Page<CompanyDto> searchTerms(Pageable pageable, String query) {
-    SearchSession searchSession = Search.session(entityManager);
+  private SearchSort getSearchSort(Pageable pageable, SearchScope<Company> scope) {
+    List<Order> sortOrderList = pageable.getSort().stream().collect(Collectors.toList());
+    SearchSortFactory searchSortFactory = scope.sort();
+    CompositeSortComponentsStep<?> compositeSortComponentsStep = searchSortFactory.composite();
 
-    SearchScope<Company> scope = searchSession.scope(Company.class);
+    for (Order sortOrder : sortOrderList) {
+      String fieldToSortBy = sortOrder.getProperty();
 
-    SearchPredicate boolPredicates = formSearchPredicates(query, scope);
+      if (fieldToSortBy.equals("bestMatch")) {
+        compositeSortComponentsStep.add(searchSortFactory.score());
+      } else {
+        SortOrder order = SortOrder.DESC;
 
-    SearchResult<Company> result = searchSession.search(scope).where(boolPredicates)
-        .fetch((int) pageable.getOffset(), pageable.getPageSize());
+        if (sortOrder.isAscending()) {
+          order = SortOrder.ASC;
+        }
 
-    List<Company> companyList = result.hits();
-    List<CompanyDto> companyDtoList = new ArrayList<>(companyList.size());
-
-    for (Company company : companyList) {
-      CompanyDto companyDto = companyMapper.companyToCompanyDto(company);
-      companyDtoList.add(companyDto);
+        FieldSortOptionsStep<?, ? extends SearchPredicateFactory> fieldSortOptionsStep = searchSortFactory.field(
+            fieldToSortBy).order(order);
+        compositeSortComponentsStep.add(fieldSortOptionsStep.toSort());
+      }
     }
 
-    return new PageImpl<>(companyDtoList, pageable, result.total().hitCount());
+    return compositeSortComponentsStep.toSort();
   }
 
   private SearchPredicate formSearchPredicates(String query, SearchScope<Company> searchScope) {
@@ -182,11 +217,9 @@ public class CompanyService {
 
     BooleanPredicateClausesStep<?> booleanJunction = factory.bool();
     prepareNamePredicate(booleanJunction, factory, query);
-    SearchPredicate boolPredicate = booleanJunction.toPredicate();
 
-    return boolPredicate;
+    return booleanJunction.toPredicate();
   }
-
 
   private void prepareNamePredicate(BooleanPredicateClausesStep<?> booleanJunction,
       SearchPredicateFactory factory, String query) {
@@ -195,7 +228,6 @@ public class CompanyService {
     }
     booleanJunction.must(factory.match().field("name").matching(query).fuzzy(2).toPredicate());
   }
-
 
   public void removeCompanyById(Long companyId) {
     companyRepository.deleteById(companyId);

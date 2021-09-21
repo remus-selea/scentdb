@@ -95,12 +95,10 @@ public class SearchService {
     PerfumeResponse perfumeResponse = createPerfumeResponse();
     perfumeList.forEach(perfume -> addInfoToPerfumeResponse(perfumeResponse, perfume));
 
-    return new PageImpl<>(Collections.singletonList(perfumeResponse), pageable,
-        result.total().hitCount());
+    return new PageImpl<>(Collections.singletonList(perfumeResponse), pageable, result.total().hitCount());
   }
 
-  private SearchSort getSearchSort(Pageable pageable,
-      SearchScope<Perfume> scope) {
+  private SearchSort getSearchSort(Pageable pageable, SearchScope<Perfume> scope) {
     List<Order> sortOrderList = pageable.getSort().stream().collect(Collectors.toList());
     SearchSortFactory searchSortFactory = scope.sort();
     CompositeSortComponentsStep<?> compositeSortComponentsStep  = searchSortFactory.composite();
@@ -145,8 +143,7 @@ public class SearchService {
     PerfumeResponse perfumeResponse = createPerfumeResponse();
     perfumeList.forEach(perfume -> addInfoToPerfumeResponse(perfumeResponse, perfume));
 
-    return new PageImpl<>(Collections.singletonList(perfumeResponse), pageable,
-        result.total().hitCount());
+    return new PageImpl<>(Collections.singletonList(perfumeResponse), pageable, result.total().hitCount());
   }
 
   private SearchPredicate formSearchPredicates(String query, SearchScope<Perfume> searchScope,
@@ -220,7 +217,6 @@ public class SearchService {
       booleanJunction.must(clausesStep);
     });
   }
-
 
 
   private void prepareCompanyFilterPredicate(BooleanPredicateClausesStep<?> booleanJunction,
