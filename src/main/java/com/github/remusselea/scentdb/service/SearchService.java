@@ -38,6 +38,7 @@ import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.hibernate.search.util.common.data.RangeBoundInclusion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
@@ -47,11 +48,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class SearchService {
 
-  private EntityManager entityManager;
+  private final EntityManager entityManager;
 
-  private PerfumeMapper perfumeMapper;
+  private final PerfumeMapper perfumeMapper;
 
-  private NoteMapper noteMapper;
+  private final NoteMapper noteMapper;
 
   public SearchService(EntityManager entityManager,
       PerfumeMapper perfumeMapper, NoteMapper noteMapper) {
@@ -65,7 +66,7 @@ public class SearchService {
       List<Filter> yearFilterList, List<Filter> perfumeTypeFilterList, List<Filter> companyFilterList) {
     Page<PerfumeResponse> perfumeResponsePage;
 
-    if ((query == null || query.isBlank()) && genderFilterList.isEmpty() && companyFilterList.isEmpty() && perfumeTypeFilterList.isEmpty()) {
+    if ((query == null || query.isBlank()) && genderFilterList.isEmpty() && companyFilterList.isEmpty() && perfumeTypeFilterList.isEmpty() && yearFilterList.isEmpty()) {
       perfumeResponsePage = searchMatchAll(pageable, query);
     } else {
       perfumeResponsePage = searchTerms(pageable, query, genderFilterList, yearFilterList, perfumeTypeFilterList, companyFilterList);
@@ -86,16 +87,24 @@ public class SearchService {
         yearFilterList, perfumeTypeFilterList, companyFilterList);
     SearchSort searchSort = getSearchSort(pageable, scope);
 
-    SearchResult<Perfume> result = searchSession.search(scope)
+    ElasticsearchSearchQuery<Perfume> searchQuery = searchSession.search(Perfume.class)
+        .extension(ElasticsearchExtension.get())
         .where(boolPredicates)
         .sort(searchSort)
-        .fetch((int) pageable.getOffset(), pageable.getPageSize());
+        .toQuery();
 
+    SearchResult<Perfume> result = searchQuery.fetch((int) pageable.getOffset(), pageable.getPageSize());
     List<Perfume> perfumeList = result.hits();
+
     PerfumeResponse perfumeResponse = createPerfumeResponse();
     perfumeList.forEach(perfume -> addInfoToPerfumeResponse(perfumeResponse, perfume));
 
-    return new PageImpl<>(Collections.singletonList(perfumeResponse), pageable, result.total().hitCount());
+    // create customPageable to fix the issue with total page results,
+    // caused by spring calculating the page total from the size of the list instead of just using the result total hit count
+    int pageNumber = pageable.getPageNumber() == 0 ? pageable.getPageNumber() : pageable.getPageNumber() -1;
+    Pageable customPageable = PageRequest.of(pageNumber, pageable.getPageSize(), pageable.getSort());
+
+    return new PageImpl<>(Collections.singletonList(perfumeResponse), customPageable, result.total().hitCount());
   }
 
   private SearchSort getSearchSort(Pageable pageable, SearchScope<Perfume> scope) {
