@@ -5,8 +5,6 @@
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=com.github.remus-selea%3Ascentdb&metric=bugs)](https://sonarcloud.io/dashboard?id=com.github.remus-selea%3Ascentdb)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=com.github.remus-selea%3Ascentdb&metric=code_smells)](https://sonarcloud.io/dashboard?id=com.github.remus-selea%3Ascentdb)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=com.github.remus-selea%3Ascentdb&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=com.github.remus-selea%3Ascentdb)
-[![GitHub issues](https://img.shields.io/github/issues/remus-selea/scentdb)](https://github.com/remus-selea/scentdb/issues)
-[![GitHub stars](https://img.shields.io/github/stars/remus-selea/scentdb)](https://github.com/remus-selea/scentdb/stargazers)  
 
 The backend of an online fragrance database cataloguing and presenting perfumes, perfumers, brands and aromas all of which are to be searchable.
 ScentDB aspires to provide a comprehensive set of resources about fragrances through a REST API.
